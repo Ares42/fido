@@ -28,9 +28,8 @@ module.exports = {
   mode: process.env.NODE_ENV,
 
   entry: {
-    background: path.join(__dirname, 'src/background.js'),
-    options: path.join(__dirname, 'src/options.js'),
     popup: path.join(__dirname, 'src/popup.js'),
+    injector: path.join(__dirname, 'src/injector.js'),
   },
   output: {
     publicPath: '/',
@@ -124,16 +123,6 @@ module.exports = {
           },
         },
       ],
-    }),
-    new HtmlWebpackPlugin({
-      template: path.join(__dirname, 'src/background.html'),
-      filename: 'background.html',
-      chunks: ['background'],
-    }),
-    new HtmlWebpackPlugin({
-      template: path.join(__dirname, 'src/options.html'),
-      filename: 'options.html',
-      chunks: ['options'],
     }),
     new HtmlWebpackPlugin({
       template: path.join(__dirname, 'src/popup.html'),
