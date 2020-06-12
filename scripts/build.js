@@ -2,6 +2,18 @@ const webpack = require('webpack');
 
 const config = require('../webpack.config');
 
-webpack(config, (err) => {
-  if (err) throw err;
+const compiler = webpack(config);
+
+compiler.watch({}, (error, stats) => {
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  console.log(
+    stats.toString({
+      // Shows colors in the console
+      colors: true,
+    })
+  );
 });
