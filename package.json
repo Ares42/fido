@@ -1,0 +1,34 @@
+{
+  "name": "media-bridge",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build-dev": "NODE_ENV=development node scripts/build.js",
+    "build-prod": "NODE_ENV=production node scripts/build.js",
+    "test": "echo 'No tests defined'; exit 1"
+  },
+  "author": "",
+  "license": "",
+  "devDependencies": {
+    "@babel/core": "^7.10.2",
+    "@babel/plugin-transform-runtime": "^7.10.1",
+    "@babel/preset-env": "^7.10.2",
+    "babel-loader": "^8.1.0",
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^6.0.2",
+    "css-loader": "^3.5.3",
+    "html-webpack-plugin": "^4.3.0",
+    "node-sass": "^4.14.1",
+    "sass-loader": "^8.0.2",
+    "vue-loader": "^15.9.2",
+    "vue-style-loader": "^4.1.2",
+    "vue-template-compiler": "^2.6.11",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11",
+    "write-file-webpack-plugin": "^4.5.1"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.10.2",
+    "vue": "^2.6.11"
+  }
+}
