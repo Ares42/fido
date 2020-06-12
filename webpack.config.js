@@ -50,6 +50,8 @@ module.exports = {
       prod: true,
       dev: false,
     }),
+    removeAvailableModules: true,
+    removeEmptyChunks: true,
   },
 
   module: {
