@@ -2,8 +2,8 @@ const path = require('path');
 const webpack = require('webpack');
 
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const CopyWebpackPlugin = require("copy-webpack-plugin");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { VueLoaderPlugin } = require('vue-loader');
 const WriteFilePlugin = require('write-file-webpack-plugin');
 
@@ -92,7 +92,9 @@ module.exports = {
         test: /\.(png|jpe?g|gif|svg)$/,
         loader: 'file-loader',
         options: {
-          name: path.join(__dirname, 'static',
+          name: path.join(
+            __dirname,
+            'static',
             envSelector({
               prod: 'images/[hash:base64].[ext]',
               dev: 'images/[path][name].[ext]',
@@ -111,11 +113,13 @@ module.exports = {
         {
           from: 'src/manifest.json',
           transform(content, path) {
-            return Buffer.from(JSON.stringify({
-              description: process.env.npm_package_description,
-              version: process.env.npm_package_version,
-              ...JSON.parse(content.toString())
-            }))
+            return Buffer.from(
+              JSON.stringify({
+                description: process.env.npm_package_description,
+                version: process.env.npm_package_version,
+                ...JSON.parse(content.toString()),
+              })
+            );
           },
         },
       ],
