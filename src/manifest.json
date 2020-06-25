@@ -1,5 +1,5 @@
 {
-  "name": "Media Bridge",
+  "name": "Fido",
   "content_scripts": [
     {
       "matches": ["*://*.youtube.com/*"],
