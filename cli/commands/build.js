@@ -46,7 +46,7 @@ module.exports = {
       dev: 'development',
     }[env];
 
-    const config = require('../../../webpack.config');
+    const config = require('../../webpack.config');
     const compiler = webpack(config);
 
     if (watch) {
