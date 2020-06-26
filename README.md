@@ -5,10 +5,10 @@
 
 ## Contributing
 
-### Install Dependencies
+### Install Tooling
 
-- [pre-commit]: used to configure Git hooks
-- [prettier]: used to lint + auto format files
+- [pre-commit] &mdash; used to configure Git hooks
+- [prettier] &mdash; used to lint + auto format files
 
 [pre-commit]: https://pre-commit.com/#install
 [prettier]: https://prettier.io/docs/en/install.html
@@ -32,6 +32,8 @@ pre-commit install
 ### Building
 
 ```
+npm install
+
 cli/fido.js build --help
 ```
 
