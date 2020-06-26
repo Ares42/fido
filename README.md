@@ -1,5 +1,8 @@
 # Fido
 
+![](https://github.com/terrace-co/fido/workflows/ci/badge.svg)
+![](https://github.com/terrace-co/fido/workflows/pre-commit/badge.svg)
+
 ## Contributing
 
 ### Install Dependencies
