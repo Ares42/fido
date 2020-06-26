@@ -3,8 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build-dev": "NODE_ENV=development node scripts/build.js",
-    "build-prod": "NODE_ENV=production node scripts/build.js",
     "test": "echo 'No tests defined'; exit 1"
   },
   "author": "",
@@ -15,10 +13,12 @@
     "@babel/preset-env": "^7.10.2",
     "autoprefixer": "^9.8.0",
     "babel-loader": "^8.1.0",
+    "chalk": "^4.1.0",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^6.0.2",
     "css-loader": "^3.5.3",
-    "html-webpack-plugin": "^4.3.0",
+    "format-duration-time": "^1.5.4",
+    "minimist": "^1.2.5",
     "node-sass": "^4.14.1",
     "postcss-loader": "^3.0.0",
     "sass-loader": "^8.0.2",

@@ -3,7 +3,6 @@ const webpack = require('webpack');
 
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { VueLoaderPlugin } = require('vue-loader');
 const WriteFilePlugin = require('write-file-webpack-plugin');
 
@@ -124,10 +123,8 @@ module.exports = {
         },
       ],
     }),
-    new HtmlWebpackPlugin({
-      template: path.join(__dirname, 'src/popup.html'),
-      filename: 'popup.html',
-      chunks: ['popup'],
+    new CopyWebpackPlugin({
+      patterns: [{ from: 'src/popup.html' }],
     }),
     new VueLoaderPlugin(),
     new WriteFilePlugin(),
