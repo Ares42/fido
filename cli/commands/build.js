@@ -51,7 +51,7 @@ module.exports = {
 
     if (watch) {
       compiler.hooks.watchRun.tap('Fido WatchRun', watchRunCallback);
-      compiler.watch({}, buildCallback);
+      compiler.watch({ ignored: [/node_modules/] }, buildCallback);
     } else {
       compiler.run(buildCallback);
     }
