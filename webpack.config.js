@@ -5,6 +5,7 @@ const webpack = require('webpack');
 
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { VueLoaderPlugin } = require('vue-loader');
 const WriteFilePlugin = require('write-file-webpack-plugin');
 
@@ -31,6 +32,8 @@ module.exports = {
   entry: {
     popup: path.join(__dirname, 'src/popup.js'),
     injector: path.join(__dirname, 'src/injector.js'),
+    background: path.join(__dirname, 'src/background.js'),
+    'dev-server': path.join(__dirname, 'src/dev-server/main.js'),
   },
   output: {
     publicPath: '/',
@@ -125,7 +128,18 @@ module.exports = {
       ],
     }),
     new CopyWebpackPlugin({
-      patterns: [{ from: 'src/popup.html' }],
+      patterns: [{ from: 'src/popup.html' }, { from: 'src/background.html' }],
+    }),
+    new HtmlWebpackPlugin({
+      inject: false,
+      template: require('html-webpack-template'),
+      title: 'Fido Dev Server',
+      mobile: true,
+      hash: true,
+      lang: 'en-US',
+      appMountId: 'app',
+      chunks: ['dev-server'],
+      inject: true,
     }),
     new VueLoaderPlugin(),
     new WriteFilePlugin(),

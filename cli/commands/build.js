@@ -3,7 +3,10 @@ const webpack = require('webpack');
 
 function buildCallback(error, stats) {
   if (error) {
-    console.error(error);
+    console.error(error.stack || error);
+    if (error.details) {
+      console.error(error.details);
+    }
     process.exit(1);
   }
 

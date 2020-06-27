@@ -3,7 +3,8 @@
   "name": "Fido",
   "version": "1.0.0",
   "permissions": [
-    "activeTab" // required for content script injection
+    "activeTab", // required for content script injection
+    "tabs" // required to detect url changes
   ],
 
   "description": "",
@@ -20,6 +21,11 @@
 
   "browser_action": {
     "default_popup": "popup.html"
+  },
+
+  "background": {
+    "persistent": true,
+    "page": "background.html"
   },
 
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
