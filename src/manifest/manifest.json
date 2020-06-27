@@ -1,0 +1,33 @@
+{
+  "manifest_version": 2,
+  "name": "Fido",
+  "version": "1.0.0",
+  "permissions": [
+    "activeTab" // required for content script injection
+  ],
+
+  "description": "",
+  "icons": {
+    // This list of icons is maintained by the webpack config. If you add a new
+    // resolution, make sure to update the corresponding build rule.
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "64": "icons/64.png",
+    "128": "icons/128.png",
+    "256": "icons/256.png"
+  },
+
+  "browser_action": {
+    "default_popup": "popup.html"
+  },
+
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["injector.bundle.js"],
+      "run_at": "document_end"
+    }
+  ]
+}

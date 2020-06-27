@@ -1,4 +1,6 @@
 const path = require('path');
+const sharp = require('sharp');
+const stripJsonComments = require('strip-json-comments');
 const webpack = require('webpack');
 
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
@@ -91,14 +93,10 @@ module.exports = {
         test: /\.(png|jpe?g|gif|svg)$/,
         loader: 'file-loader',
         options: {
-          name: path.join(
-            __dirname,
-            'static',
-            envSelector({
-              prod: 'images/[hash:base64].[ext]',
-              dev: 'images/[path][name].[ext]',
-            })
-          ),
+          name: envSelector({
+            prod: 'images/[hash:base64].[ext]',
+            dev: 'images/[name].[hash:base64].[ext]',
+          }),
         },
       },
     ],
@@ -110,17 +108,20 @@ module.exports = {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: 'src/manifest.json',
-          transform(content, path) {
-            return Buffer.from(
-              JSON.stringify({
-                description: process.env.npm_package_description,
-                version: process.env.npm_package_version,
-                ...JSON.parse(content.toString()),
-              })
+          from: 'src/manifest/manifest.json',
+          transform(content) {
+            return JSON.stringify(
+              JSON.parse(stripJsonComments(content.toString()))
             );
           },
         },
+        ...[16, 32, 48, 64, 128, 256].map((size) => ({
+          from: 'src/manifest/icon.png',
+          to: `icons/${size}.png`,
+          transform(content) {
+            return sharp(content).resize(size, size).toBuffer();
+          },
+        })),
       ],
     }),
     new CopyWebpackPlugin({
