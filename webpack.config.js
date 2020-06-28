@@ -1,3 +1,4 @@
+const merge = require('webpack-merge');
 const path = require('path');
 const sharp = require('sharp');
 const stripJsonComments = require('strip-json-comments');
@@ -26,15 +27,9 @@ function envSelector(options) {
   return options[envLabel];
 }
 
-module.exports = {
+const BaseConfig = {
   mode: process.env.NODE_ENV,
 
-  entry: {
-    popup: path.join(__dirname, 'src/popup.js'),
-    injector: path.join(__dirname, 'src/injector.js'),
-    background: path.join(__dirname, 'src/background.js'),
-    'dev-server': path.join(__dirname, 'src/dev-server/main.js'),
-  },
   output: {
     publicPath: '/',
     path: path.join(__dirname, 'build'),
@@ -108,6 +103,19 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(),
     new webpack.EnvironmentPlugin(['NODE_ENV']),
+    new VueLoaderPlugin(),
+    new WriteFilePlugin(),
+  ],
+};
+
+const FidoConfig = merge(BaseConfig, {
+  entry: {
+    popup: path.join(__dirname, 'src/popup.js'),
+    injector: path.join(__dirname, 'src/injector.js'),
+    background: path.join(__dirname, 'src/background.js'),
+  },
+
+  plugins: [
     new CopyWebpackPlugin({
       patterns: [
         {
@@ -130,6 +138,15 @@ module.exports = {
     new CopyWebpackPlugin({
       patterns: [{ from: 'src/popup.html' }, { from: 'src/background.html' }],
     }),
+  ],
+});
+
+const DevServerConfig = merge(BaseConfig, {
+  entry: {
+    'dev-server': path.join(__dirname, 'src/dev-server/main.js'),
+  },
+
+  plugins: [
     new HtmlWebpackPlugin({
       inject: false,
       template: require('html-webpack-template'),
@@ -141,7 +158,10 @@ module.exports = {
       chunks: ['dev-server'],
       inject: true,
     }),
-    new VueLoaderPlugin(),
-    new WriteFilePlugin(),
   ],
+});
+
+module.exports = {
+  FidoConfig,
+  DevServerConfig,
 };

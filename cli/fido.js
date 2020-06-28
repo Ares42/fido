@@ -6,6 +6,7 @@ const Args = require('./args.js');
 
 const COMMANDS = {
   build: () => require('./commands/build.js'),
+  'dev-server': () => require('./commands/dev-server.js'),
 };
 
 function main(positionalArgs, keywordArgs) {

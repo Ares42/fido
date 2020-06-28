@@ -1,7 +1,7 @@
 const Duration = require('format-duration-time').default;
 const webpack = require('webpack');
 
-function buildCallback(error, stats) {
+function buildCallback(error, stats, { verbose }) {
   if (error) {
     console.error(error.stack || error);
     if (error.details) {
@@ -10,7 +10,7 @@ function buildCallback(error, stats) {
     process.exit(1);
   }
 
-  if (stats.hasErrors() || stats.hasWarnings()) {
+  if (stats.hasErrors() || stats.hasWarnings() || verbose) {
     console.log(stats.toString({ colors: true }));
   }
 
@@ -41,22 +41,37 @@ module.exports = {
       type: Boolean,
       default: false,
     },
+
+    config: {
+      type: String,
+      default: 'Fido',
+      values: ['Fido', 'DevServer'],
+    },
+
+    verbose: {
+      type: Boolean,
+      default: false,
+    },
   },
 
-  run(_, { env, watch }) {
+  run(_, { env, watch, config: configName, verbose }) {
     process.env.NODE_ENV = {
       prod: 'production',
       dev: 'development',
     }[env];
 
-    const config = require('../../webpack.config');
+    const config = require('../../webpack.config')[`${configName}Config`];
     const compiler = webpack(config);
 
+    const buildCallbackClosure = (error, stats) => {
+      return buildCallback(error, stats, { verbose });
+    };
+
     if (watch) {
-      compiler.hooks.watchRun.tap('Fido WatchRun', watchRunCallback);
-      compiler.watch({ ignored: [/node_modules/] }, buildCallback);
+      compiler.hooks.watchRun.tap('fido', watchRunCallback);
+      compiler.watch({ ignored: [/node_modules/] }, buildCallbackClosure);
     } else {
-      compiler.run(buildCallback);
+      compiler.run(buildCallbackClosure);
     }
   },
 };

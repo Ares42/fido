@@ -29,12 +29,17 @@ git lfs pull
 pre-commit install
 ```
 
-### Building
+### Install project dependencies
 
-```
+```sh
 npm install
+```
 
-cli/fido.js build --help
+### Local Development
+
+```sh
+# Hosts a hot-reloaded frame for the chrome extension at localhost:8080
+cli/fido.js dev-server
 ```
 
 ### Pull Requests
