@@ -23,23 +23,12 @@ function buildCallback(error, stats, { verbose }) {
   }
 }
 
-function watchRunCallback(compiler) {
-  for (const fileName of Object.keys(compiler.watchFileSystem.watcher.mtimes)) {
-    console.log(`⏰ ${fileName}`);
-  }
-}
-
 module.exports = {
   arguments: {
     env: {
       type: String,
       values: ['dev', 'prod'],
       default: 'dev',
-    },
-
-    watch: {
-      type: Boolean,
-      default: false,
     },
 
     config: {
@@ -62,16 +51,8 @@ module.exports = {
 
     const config = require('../../webpack.config')[`${configName}Config`];
     const compiler = webpack(config);
-
-    const buildCallbackClosure = (error, stats) => {
-      return buildCallback(error, stats, { verbose });
-    };
-
-    if (watch) {
-      compiler.hooks.watchRun.tap('fido', watchRunCallback);
-      compiler.watch({ ignored: [/node_modules/] }, buildCallbackClosure);
-    } else {
-      compiler.run(buildCallbackClosure);
-    }
+    compiler.run((error, stats) => {
+      buildCallback(error, stats, { verbose });
+    });
   },
 };

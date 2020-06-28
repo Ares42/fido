@@ -57,6 +57,14 @@ module.exports = {
       }
     });
 
+    compiler.hooks.watchRun.tap('fido', () => {
+      for (const fileName of Object.keys(
+        compiler.watchFileSystem.watcher.mtimes
+      )) {
+        console.log(`⏰ ${fileName}`);
+      }
+    });
+
     console.log(`👂 Listening on ${host}:${port}`);
     server.listen(port, host, (error) => {
       if (error) {
