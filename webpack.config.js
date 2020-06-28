@@ -110,7 +110,6 @@ const BaseConfig = {
 
 const FidoConfig = merge(BaseConfig, {
   entry: {
-    popup: path.join(__dirname, 'src/popup.js'),
     injector: path.join(__dirname, 'src/injector.js'),
     background: path.join(__dirname, 'src/background.js'),
   },
@@ -136,7 +135,7 @@ const FidoConfig = merge(BaseConfig, {
       ],
     }),
     new CopyWebpackPlugin({
-      patterns: [{ from: 'src/popup.html' }, { from: 'src/background.html' }],
+      patterns: [{ from: 'src/background.html' }],
     }),
   ],
 });
