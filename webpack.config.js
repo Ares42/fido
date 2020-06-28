@@ -92,8 +92,8 @@ const BaseConfig = {
         loader: 'file-loader',
         options: {
           name: envSelector({
-            prod: 'images/[hash:base64].[ext]',
-            dev: 'images/[name].[hash:base64].[ext]',
+            prod: 'static/images/[hash:base64].[ext]',
+            dev: 'static/images/[name].[hash:base64].[ext]',
           }),
         },
       },

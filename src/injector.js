@@ -4,12 +4,17 @@ import App from '@/src/fido/App';
 import { backOff } from 'exponential-backoff';
 import { parseDescription } from '@/src/parser';
 
-function inject() {
-  const container = document.getElementById('related');
-  if (!container) {
-    console.error('Unable to inject Fido');
-    return;
-  }
+async function waitFor(predicate) {
+  return await backOff(async () => {
+    const response = predicate();
+    if (response) return response;
+    throw 'Still waiting...';
+  });
+}
+
+async function inject() {
+  const container = await waitFor(() => document.getElementById('related'));
+  await waitFor(() => !container.querySelector('skeleton-bg-color'));
 
   const root = document.createElement('div');
   container.insertBefore(root, container.childNodes[0]);
@@ -20,48 +25,38 @@ function inject() {
   }).$mount(root);
 }
 
-async function getDescriptionElement() {
-  return await backOff(async () => {
-    const description = document.getElementById('description');
-    if (description) return description;
-    throw 'Unable to locate the video description';
-  });
-}
-
-async function waitForDescriptionChange(element, previousText) {
-  return await backOff(() => {
-    if (element.innerText != previousText) {
-      return element.innerText;
-    }
-
-    throw 'Still waiting for new text';
-  });
-}
-
 async function watchDescription(app) {
-  const description = await getDescriptionElement();
+  const description = await waitFor(() =>
+    document.getElementById('description')
+  );
 
   let previousText = null;
+  const reloadDescription = () => {
+    console.log('Reloading Fido content...');
+    waitFor(() => description.innerText != previousText)
+      .then(() => {
+        previousText = description.innerText;
+        app.metadata = parseDescription(description.innerText);
+      })
+      .catch((error) => {
+        console.log('Failed to load new description with error', error);
+      });
+  };
+
+  reloadDescription();
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.type == 'tabchange') {
-      console.log('Reloading Fido content...');
-      waitForDescriptionChange(description, previousText)
-        .then((text) => {
-          previousText = text;
-          app.metadata = parseDescription(text);
-        })
-        .catch((error) => {
-          console.log('Failed to load new description with error', error);
-        });
+      reloadDescription();
     }
     sendResponse({});
   });
 }
 
 function main() {
-  const app = inject();
-  watchDescription(app).catch((error) => {
-    console.log('Failed to watch description with error', error);
+  inject().then((app) => {
+    watchDescription(app).catch((error) => {
+      console.log('Failed to watch description with error', error);
+    });
   });
 }
 

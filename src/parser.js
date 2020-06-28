@@ -32,7 +32,7 @@ function* parseUrls(descriptionText) {
       // ```
       const match = text
         .slice(0, urls[0].index)
-        .match(/^([^:]+)\s*[^\s&\+]\s+$/);
+        .match(/^([^:]+)\s*[^\s&\+a-zA-Z0-9]\s+$/);
       if (match) {
         label = match[1].replace(/►/g, '');
       }

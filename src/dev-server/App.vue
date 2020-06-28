@@ -89,6 +89,7 @@ export default {
 .Fido {
   @include layout-center;
 
+  background: #F9F9F9;
   flex: 50%;
 }
 
