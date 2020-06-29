@@ -43,9 +43,6 @@ const BaseConfig = {
     }),
     removeAvailableModules: true,
     removeEmptyChunks: true,
-    splitChunks: {
-      chunks: 'all',
-    },
   },
 
   module: {

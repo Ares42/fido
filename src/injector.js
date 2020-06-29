@@ -53,6 +53,7 @@ async function watchDescription(app) {
 }
 
 function main() {
+  console.log('FIDO');
   inject().then((app) => {
     watchDescription(app).catch((error) => {
       console.log('Failed to watch description with error', error);
