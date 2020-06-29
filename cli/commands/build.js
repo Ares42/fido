@@ -34,7 +34,7 @@ module.exports = {
     config: {
       type: String,
       default: 'Fido',
-      values: ['Fido', 'DevServer'],
+      values: ['Fido', 'DevServer', 'Server'],
     },
 
     verbose: {
@@ -48,6 +48,15 @@ module.exports = {
       prod: 'production',
       dev: 'development',
     }[env];
+
+    process.fido = {
+      flags: {
+        server: {
+          prod: 'https://fido.com',
+          dev: 'https://dev.fido.com',
+        }[env],
+      },
+    };
 
     const config = require('../../webpack.config')[`${configName}Config`];
     const compiler = webpack(config);

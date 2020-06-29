@@ -9,6 +9,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { VueLoaderPlugin } = require('vue-loader');
 const WriteFilePlugin = require('write-file-webpack-plugin');
+const nodeExternals = require('webpack-node-externals');
 
 function envSelector(options) {
   const envLabel = {
@@ -32,7 +33,6 @@ const BaseConfig = {
 
   output: {
     publicPath: '/',
-    path: path.join(__dirname, 'build'),
     filename: '[name].bundle.js',
   },
 
@@ -50,6 +50,9 @@ const BaseConfig = {
     }),
     removeAvailableModules: true,
     removeEmptyChunks: true,
+    splitChunks: {
+      chunks: 'all',
+    },
   },
 
   module: {
@@ -69,22 +72,36 @@ const BaseConfig = {
         },
       },
       {
-        test: /\.(css|sass)$/,
-        use: [
-          'vue-style-loader',
+        oneOf: [
           {
-            loader: 'css-loader',
-            options: {
-              modules: {
-                localIdentName: envSelector({
-                  prod: '[hash:base64]',
-                  dev: '[path][name]__[local]',
-                }),
-              },
-            },
+            test: /\.(css|sass)$/,
+            resourceQuery: /^\?raw$/,
+            use: [
+              'vue-style-loader',
+              'css-loader',
+              'postcss-loader',
+              'sass-loader',
+            ],
           },
-          'postcss-loader',
-          'sass-loader',
+          {
+            test: /\.(css|sass)$/,
+            use: [
+              'vue-style-loader',
+              {
+                loader: 'css-loader',
+                options: {
+                  modules: {
+                    localIdentName: envSelector({
+                      prod: '[hash:base64]',
+                      dev: '[path][name]__[local]',
+                    }),
+                  },
+                },
+              },
+              'postcss-loader',
+              'sass-loader',
+            ],
+          },
         ],
       },
       {
@@ -103,6 +120,7 @@ const BaseConfig = {
   plugins: [
     new CleanWebpackPlugin(),
     new webpack.EnvironmentPlugin(['NODE_ENV']),
+    new webpack.DefinePlugin({ 'process.fido': JSON.stringify(process.fido) }),
     new VueLoaderPlugin(),
     new WriteFilePlugin(),
   ],
@@ -112,6 +130,10 @@ const FidoConfig = merge(BaseConfig, {
   entry: {
     injector: path.join(__dirname, 'src/injector.js'),
     background: path.join(__dirname, 'src/background.js'),
+  },
+
+  output: {
+    path: path.join(__dirname, 'build/fido'),
   },
 
   plugins: [
@@ -141,8 +163,14 @@ const FidoConfig = merge(BaseConfig, {
 });
 
 const DevServerConfig = merge(BaseConfig, {
+  devtool: 'source-map',
+
   entry: {
     'dev-server': path.join(__dirname, 'src/dev-server/main.js'),
+  },
+
+  output: {
+    path: path.join(__dirname, 'build/dev-server'),
   },
 
   plugins: [
@@ -160,7 +188,21 @@ const DevServerConfig = merge(BaseConfig, {
   ],
 });
 
+const ServerConfig = merge(BaseConfig, {
+  entry: {
+    server: path.join(__dirname, 'src/server/server.js'),
+  },
+
+  output: {
+    path: path.join(__dirname, 'build/server'),
+  },
+
+  target: 'node',
+  externals: [nodeExternals()],
+});
+
 module.exports = {
   FidoConfig,
   DevServerConfig,
+  ServerConfig,
 };

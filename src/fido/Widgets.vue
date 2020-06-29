@@ -1,16 +1,18 @@
 <template>
   <div :class="$style.Host">
     <template v-for="url in widgets">
-      <UrlWidget :label="url.label" :url="url.url" />
+      <PatreonWidget :url="url.url" v-if="url.type == 'patreon'" />
+      <UrlWidget :label="url.label" :url="url.url" v-else />
     </template>
   </div>
 </template>
 
 <script>
+import PatreonWidget from '@/src/fido/PatreonWidget';
 import UrlWidget from '@/src/fido/UrlWidget';
 
 export default {
-  components: { UrlWidget },
+  components: { PatreonWidget, UrlWidget },
 
   props: {
     metadata: Object,
@@ -19,7 +21,10 @@ export default {
   computed: {
     widgets() {
       if (!this.metadata) return [];
-      return this.metadata.urls;
+      return this.metadata.urls.map((url) => ({
+        type: url.url.indexOf('patreon.com') != -1 ? 'patreon' : null,
+        ...url,
+      }));
     },
   },
 };

@@ -36,3 +36,5 @@ jobs:
       run: cli/fido.js build --env prod --config Fido
     - name: Build DevServer
       run: cli/fido.js build --env prod --config DevServer
+    - name: Build Server
+      run: cli/fido.js build --env prod --config Server

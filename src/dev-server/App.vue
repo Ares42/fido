@@ -1,10 +1,15 @@
 <template>
   <div :class="$style.Host">
     <div :class="$style.Description">
-      <div ref="description" contenteditable @keyup="saveDescription_">
-        Some YouTube description.
+      <codemirror
+        :class="$style.CodeMirror"
+        v-model="codemirror_.code"
+        :options="codemirror_.options"
+        @changes="onCodeChange_"
+      />
+      <div :class="$style.Toolbar">
+        <button @click="parseAndLoad_">parse + load</button>
       </div>
-      <button @click="loadFido_">load fido</button>
     </div>
     <div :class="$style.Fido">
       <div :class="$style.FidoWrapper">
@@ -15,36 +20,49 @@
 </template>
 
 <script>
+import { codemirror } from 'vue-codemirror';
+import 'codemirror/lib/codemirror.css?raw';
+import 'codemirror/mode/xml/xml.js';
+import 'codemirror/theme/base16-dark.css?raw';
+
 import Fido from '@/src/fido/App';
 
 import { parseDescription } from '@/src/parser';
 
 export default {
-  components: { Fido },
+  components: { codemirror, Fido },
 
   data() {
     return {
+      codemirror_: {
+        code:
+          localStorage['fido:dev-server:description'] ||
+          '<span>description html</span>',
+        options: {
+          mode: 'xml',
+          htmlMode: true,
+          theme: 'base16-dark',
+          lineNumbers: true,
+          line: true,
+          tabSize: 2,
+        },
+      },
       metadata: null,
     };
   },
 
   methods: {
-    loadFido_() {
-      this.saveDescription_();
-      this.metadata = parseDescription(this.$refs.description.innerText);
+    onCodeChange_() {
+      localStorage['fido:dev-server:description'] = this.codemirror_.code;
     },
 
-    saveDescription_() {
-      localStorage.setItem(
-        'fido:dev-server:description',
-        this.$refs.description.innerText
-      );
-    },
-  },
+    parseAndLoad_() {
+      const element = document.createElement('div');
+      element.innerHTML = this.codemirror_.code;
+      const text = element.innerText;
 
-  mounted() {
-    const description = localStorage.getItem('fido:dev-server:description');
-    this.$refs.description.innerText = description;
+      this.metadata = parseDescription(text);
+    },
   },
 };
 </script>
@@ -59,30 +77,46 @@ export default {
 }
 
 .Description {
-  @include _fonts-base;
+  @include layout-vertical;
 
-  background: #1B1B1B;
-  color: #FFFFFF;
-  flex: 50%;
-  font-family: Helvetica;
+  background: #151515;
+  flex-grow: 1;
+}
+
+.CodeMirror {
+  flex-grow: 1;
   font-size: 16px;
   line-height: normal;
-  overflow: scroll;
 
-  & > div[contenteditable] {
-    padding: 50px;
-
-    &:focus {
-      outline: none;
-    }
+  & > div {
+    height: 100%;
   }
+}
+
+.Toolbar {
+  flex-shrink: 0;
+  height: 50px;
+  margin: 20px;
+  text-align: center;
 
   & > button {
-    border-radius: 2px;
+    @include fonts-body;
+
+    background: #FFFFFF;
+    border-radius: 999px;
     border: none;
-    margin: 0 50px;
+    cursor: pointer;
+    display: inline-block;
     outline: none;
-    padding: 10px 20px;
+    padding: 12.5px 24px;
+
+    &:hover {
+      background: #F0F0F0;
+    }
+
+    &:active {
+      background: #E0E0E0;
+    }
   }
 }
 
@@ -90,7 +124,8 @@ export default {
   @include layout-center;
 
   background: #F9F9F9;
-  flex: 50%;
+  flex-shrink: 0;
+  padding: 50px;
 }
 
 .FidoWrapper {

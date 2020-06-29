@@ -34,12 +34,19 @@
     "webpack-cli": "^3.3.11",
     "webpack-dev-server": "^3.11.0",
     "webpack-merge": "^4.2.2",
+    "webpack-node-externals": "^1.7.2",
     "write-file-webpack-plugin": "^4.5.1"
   },
   "dependencies": {
     "@babel/runtime": "^7.10.2",
+    "cors": "^2.8.5",
     "exponential-backoff": "^3.0.1",
+    "express": "^4.17.1",
+    "node-fetch": "^2.6.0",
+    "safe-eval": "^0.4.1",
+    "string-strip-html": "^4.5.0",
     "url-regex": "^5.0.0",
-    "vue": "^2.6.11"
+    "vue": "^2.6.11",
+    "vue-codemirror": "^4.0.6"
   }
 }

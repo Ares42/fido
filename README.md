@@ -38,9 +38,32 @@ npm install
 ### Local Development
 
 ```sh
-# Hosts a hot-reloaded frame for the chrome extension at localhost:8080
-cli/fido.js dev-server
+cli/fido.js run-local
 ```
+
+The run-local script will kick-off several processes:
+
+1. Start any downstream local services (EG: Redis)
+2. Compile + run the API Server (default: port 3000)
+3. Compile + run the Fido Dev Server (default: port 8080)
+
+You should see something like this:
+
+```sh
+👂 [fido] Serving on localhost:8080
+✅ [server] Built successfully [0m 0s]
+Server listening on port 3000
+✅ [fido] Built successfully [0m 2s]
+```
+
+At this point all systems are up and running! You can visit
+[localhost:8080](http://localhost:8080) to begin interacting with Fido locally.
+
+Occasionally, you will need to actually test Fido locally as an unpacked chrome
+extension. To do this you'll need to explicitly build Fido with
+`cli/fido.js build` in addition to using `run-local` and you'll need to
+load/update the unpacked extension at
+[chrome://extensions](chrome://extensions).
 
 ### Pull Requests
 

@@ -1,6 +1,6 @@
 <template>
   <div :class="$style.Host">
-    <div>{{ label }}</div>
+    <div v-if="label">{{ label }}</div>
     <div>{{ url }}</div>
   </div>
 </template>
@@ -10,7 +10,6 @@ export default {
   props: {
     label: {
       type: String,
-      required: true,
     },
     url: {
       type: String,
