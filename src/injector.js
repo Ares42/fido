@@ -6,15 +6,32 @@ import { parseDescription } from '@/src/parser';
 
 async function waitFor(predicate) {
   return await backOff(async () => {
-    const response = predicate();
+    let response;
+    try {
+      response = predicate();
+    } catch (error) {
+      console.warn('[fido] unexpected error ', error);
+    }
     if (response) return response;
     throw 'Still waiting...';
   });
 }
 
 async function inject() {
-  const container = await waitFor(() => document.getElementById('related'));
-  await waitFor(() => !container.querySelector('skeleton-bg-color'));
+  console.log('[fido] Waiting for injection');
+  const container = await waitFor(() => {
+    const element = document.getElementById('related');
+    if (
+      !element ||
+      element.parentElement.id == 'related-skeleton' ||
+      !element.querySelector('#items') ||
+      element.querySelector('#items').children.length <= 1
+    ) {
+      return null;
+    }
+    return element;
+  });
+  console.log('[fido] Injecting');
 
   const root = document.createElement('div');
   container.insertBefore(root, container.childNodes[0]);
@@ -53,12 +70,15 @@ async function watchDescription(app) {
 }
 
 function main() {
-  console.log('FIDO');
-  inject().then((app) => {
-    watchDescription(app).catch((error) => {
-      console.log('Failed to watch description with error', error);
+  inject()
+    .then((app) => {
+      watchDescription(app).catch((error) => {
+        console.log('Failed to watch description with error', error);
+      });
+    })
+    .catch((error) => {
+      console.warn('[fido] Failed injection with error:', error);
     });
-  });
 }
 
 if (document.readyState == 'complete') {
