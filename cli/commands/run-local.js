@@ -54,7 +54,7 @@ function watchAndRunServer({ port, verbose }) {
 
     // Is the build failed, but we're still watching, don't restart the server.
     // Wait for a passing build.
-    if (!stats.hasErrors()) return;
+    if (stats.hasErrors()) return;
 
     if (server) {
       console.log('🔄 [server] Restarting the server');
@@ -96,8 +96,8 @@ module.exports = {
   arguments: {
     env: {
       type: String,
-      values: ['dev', 'prod'],
-      default: 'dev',
+      values: ['local', 'production'],
+      default: 'local',
     },
 
     host: {
@@ -122,11 +122,7 @@ module.exports = {
   },
 
   run(_, args) {
-    process.env.NODE_ENV = {
-      prod: 'production',
-      dev: 'development',
-    }[args.env];
-
+    process.env.NODE_ENV = args.env;
     process.fido = {
       flags: {
         server: `http://${args.host}:${args['server-port']}`,

@@ -12,24 +12,17 @@ const WriteFilePlugin = require('write-file-webpack-plugin');
 const nodeExternals = require('webpack-node-externals');
 
 function envSelector(options) {
-  const envLabel = {
-    production: 'prod',
-    development: 'dev',
-  }[process.env.NODE_ENV];
-
-  if (!envLabel) {
-    throw 'Unexpected environment: ' + process.env.NODE_ENV;
+  if (!(process.env.NODE_ENV in options)) {
+    throw 'Missing environment option for label: ' + process.env.NODE_ENV;
   }
-
-  if (!(envLabel in options)) {
-    throw 'Missing environment option for label: ' + envLabel;
-  }
-
-  return options[envLabel];
+  return options[process.env.NODE_ENV];
 }
 
 const BaseConfig = {
-  mode: process.env.NODE_ENV,
+  mode: envSelector({
+    production: 'production',
+    local: 'development',
+  }),
 
   output: {
     publicPath: '/',
@@ -45,8 +38,8 @@ const BaseConfig = {
 
   optimization: {
     minimize: envSelector({
-      prod: true,
-      dev: false,
+      production: true,
+      local: false,
     }),
     removeAvailableModules: true,
     removeEmptyChunks: true,
@@ -92,8 +85,8 @@ const BaseConfig = {
                 options: {
                   modules: {
                     localIdentName: envSelector({
-                      prod: '[hash:base64]',
-                      dev: '[path][name]__[local]',
+                      production: '[hash:base64]',
+                      local: '[path][name]__[local]',
                     }),
                   },
                 },
@@ -109,8 +102,8 @@ const BaseConfig = {
         loader: 'file-loader',
         options: {
           name: envSelector({
-            prod: 'static/images/[hash:base64].[ext]',
-            dev: 'static/images/[name].[hash:base64].[ext]',
+            production: 'static/images/[hash:base64].[ext]',
+            local: 'static/images/[name].[hash:base64].[ext]',
           }),
         },
       },

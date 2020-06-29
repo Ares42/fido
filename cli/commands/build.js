@@ -27,8 +27,8 @@ module.exports = {
   arguments: {
     env: {
       type: String,
-      values: ['dev', 'prod'],
-      default: 'dev',
+      values: ['local', 'production'],
+      default: 'local',
     },
 
     config: {
@@ -37,31 +37,32 @@ module.exports = {
       values: ['Fido', 'DevServer', 'Server'],
     },
 
+    'local-server': {
+      type: String,
+      default: 'http://localhost:3000',
+    },
+
     verbose: {
       type: Boolean,
       default: false,
     },
   },
 
-  run(_, { env, watch, config: configName, verbose }) {
-    process.env.NODE_ENV = {
-      prod: 'production',
-      dev: 'development',
-    }[env];
-
+  run(_, args) {
+    process.env.NODE_ENV = args.env;
     process.fido = {
       flags: {
         server: {
-          prod: 'https://fido.com',
-          dev: 'https://dev.fido.com',
-        }[env],
+          production: 'https://fido.com',
+          local: args['local-server'],
+        }[args.env],
       },
     };
 
-    const config = require('../../webpack.config')[`${configName}Config`];
+    const config = require('../../webpack.config')[`${args.config}Config`];
     const compiler = webpack(config);
     compiler.run((error, stats) => {
-      buildCallback(error, stats, { verbose });
+      buildCallback(error, stats, { verbose: args.verbose });
     });
   },
 };
