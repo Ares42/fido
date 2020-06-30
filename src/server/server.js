@@ -1,5 +1,7 @@
+import compression from 'compression';
 import cors from 'cors';
 import express from 'express';
+import helmet from 'helmet';
 import minimist from 'minimist';
 
 import * as patreonInfo from './apis/patreonInfo.js';
@@ -14,6 +16,8 @@ function main(positionalArgs, keywordArgs) {
 
   const app = express();
   app.use(cors());
+  app.use(helmet());
+  app.use(compression());
   app.use(express.json());
 
   const methods = ['get', 'post', 'put', 'patch', 'delete'];

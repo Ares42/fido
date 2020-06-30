@@ -38,6 +38,9 @@ export default {
     url: {
       immediate: true,
       handler() {
+        console.log(
+          `${process.fido.flags.server}/api/v1/patreonInfo?url=${this.url}`
+        );
         fetch(`${process.fido.flags.server}/api/v1/patreonInfo?url=${this.url}`)
           .then((response) => response.json())
           .then(({ goal }) => {
@@ -45,7 +48,7 @@ export default {
             this.progress_ = Math.round(100 * goal.progress);
           })
           .catch((error) => {
-            console.error(error);
+            console.error('Patreon', error);
           });
       },
     },
