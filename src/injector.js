@@ -5,16 +5,23 @@ import { backOff } from 'exponential-backoff';
 import { parseDescription } from '@/src/parser';
 
 async function waitFor(predicate) {
-  return await backOff(async () => {
-    let response;
-    try {
-      response = predicate();
-    } catch (error) {
-      console.warn('[fido] unexpected error ', error);
+  return await backOff(
+    async () => {
+      let response;
+      try {
+        response = predicate();
+      } catch (error) {
+        console.warn('[fido] unexpected error ', error);
+      }
+      if (response) return response;
+      throw 'Still waiting...';
+    },
+    {
+      jitter: 'none',
+      maxDelay: 5 * 1000,
+      numOfAttempts: Infinity,
     }
-    if (response) return response;
-    throw 'Still waiting...';
-  });
+  );
 }
 
 async function inject() {
