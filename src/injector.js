@@ -53,7 +53,7 @@ async function watchDescription(app) {
     waitFor(() => description.innerText != previousText)
       .then(() => {
         previousText = description.innerText;
-        app.metadata = parseDescription(description.innerText);
+        app.metadata = parseDescription(description);
       })
       .catch((error) => {
         console.log('Failed to load new description with error', error);

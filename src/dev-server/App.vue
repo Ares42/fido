@@ -59,9 +59,7 @@ export default {
     parseAndLoad_() {
       const element = document.createElement('div');
       element.innerHTML = this.codemirror_.code;
-      const text = element.innerText;
-
-      this.metadata = parseDescription(text);
+      this.metadata = parseDescription(element);
     },
   },
 };
