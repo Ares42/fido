@@ -83,9 +83,10 @@ function createAnnotatedText(element) {
         continue;
       }
 
-      // We can safely assume that all root nodes are text nodes.
+      const isLink = child.parentElement.tagName == 'A';
+      const isHashTag = isLink && child.textContent.startsWith('#');
 
-      if (child.parentElement.tagName == 'A') {
+      if (isLink && !isHashTag) {
         // We assume all links are a single line. This seems to be true as
         // enforced by YouTube's description editor.
         currentLine.push({ url: child.textContent });
