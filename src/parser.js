@@ -22,6 +22,19 @@ function* labelUrls(annotatedText) {
   }
 }
 
+function* extractMentions(annotatedText) {
+  for (const line of annotatedText) {
+    if (line.length == 1 && 'text' in line[0]) {
+      const text = line[0].text;
+      const match = text.match(/^(.+)\s+@([a-zA-Z0-9_\.]+)$/);
+      if (match) {
+        const [_, label, handle] = match;
+        yield { label, handle };
+      }
+    }
+  }
+}
+
 // Decomposes the DOM given a root element into an annotated version of
 // `innerText` split by lines.
 //
@@ -113,5 +126,6 @@ export function parseDescription(element) {
       annotatedText,
     },
     urls: [...labelUrls(annotatedText)],
+    mentions: [...extractMentions(annotatedText)],
   };
 }
