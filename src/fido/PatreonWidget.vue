@@ -38,15 +38,25 @@ export default {
     url: {
       immediate: true,
       handler() {
-        fetch(`${process.fido.flags.server}/api/v1/patreonInfo?url=${this.url}`)
-          .then((response) => response.json())
-          .then(({ goal }) => {
+        chrome.runtime.sendMessage(
+          {
+            type: 'scrapePatreon',
+            url: this.url,
+          },
+          (response) => {
+            if (response.error) {
+              console.log(
+                'Failed to populate patreon widget with error:',
+                response.error
+              );
+              return;
+            }
+
+            const { goal } = response;
             this.text_ = goal.description;
             this.progress_ = Math.round(100 * goal.progress);
-          })
-          .catch((error) => {
-            console.error(error);
-          });
+          }
+        );
       },
     },
   },
