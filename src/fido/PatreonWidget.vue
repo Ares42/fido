@@ -67,7 +67,7 @@ export default {
 }
 
 .Progress {
-  margin: 15px 10px;
+  margin: 10px 10px 15px;
 }
 
 .Progress_Label {
@@ -113,7 +113,7 @@ export default {
   display: block;
   font-size: 16px;
   line-height: normal;
-  margin: 0 auto;
+  margin: 15px auto 0;
   padding: 12.5px 24px;
   text-align: center;
   text-decoration: none;
