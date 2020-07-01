@@ -37,9 +37,9 @@ module.exports = {
       values: ['Fido', 'DevServer', 'Server'],
     },
 
-    'local-server': {
+    'server-override': {
       type: String,
-      default: 'http://localhost:3000',
+      default: null,
     },
 
     verbose: {
@@ -52,10 +52,12 @@ module.exports = {
     process.env.NODE_ENV = args.env;
     process.fido = {
       flags: {
-        server: {
-          production: 'https://fido.com',
-          local: args['local-server'],
-        }[args.env],
+        server:
+          args['server-override'] ||
+          {
+            production: 'https://fido.com',
+            local: 'http://localhost:3000',
+          }[args.env],
       },
     };
 
