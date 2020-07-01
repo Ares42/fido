@@ -1,7 +1,7 @@
 <template>
   <div :class="$style.Host">
     <div :class="$style.Icon"><img :src="images_.icon" /></div>
-    <div :class="$style.Progress" v-if="progress_">
+    <div :class="$style.Progress" v-if="progress_ != null">
       <div :class="$style.Progress_Label">{{ progress_ }}% complete</div>
       <div :class="$style.Progress_Bar">
         <div :style="`width: ${progress_}%`"></div>
