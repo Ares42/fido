@@ -40,9 +40,13 @@ export default {
       handler() {
         fetch(`${process.fido.flags.server}/api/v1/patreonInfo?url=${this.url}`)
           .then((response) => response.json())
-          .then(({ goal }) => {
-            this.text_ = goal.description;
-            this.progress_ = Math.round(100 * goal.progress);
+          .then(({ goal, summary }) => {
+            if (goal) {
+              this.text_ = goal.description;
+              this.progress_ = Math.round(100 * goal.progress);
+            } else {
+              this.text_ = summary;
+            }
           })
           .catch((error) => {
             console.error(error);

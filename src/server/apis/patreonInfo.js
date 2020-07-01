@@ -42,17 +42,14 @@ function getLatestGoal(bootstrap) {
   };
 }
 
-async function main() {
-  const userId = process.argv[2];
-  if (!userId) {
-    console.error(chalk.red('Missing positional arg: <userId>'));
-    process.exit(1);
-  }
+function getCampaignSummary(bootstrap) {
+  return bootstrap.campaign.data.attributes.summary;
 }
 
 export async function get(request, response) {
   const bootstrap = await getPatreonBootstrap(request.query.url);
   response.json({
     goal: getLatestGoal(bootstrap),
+    summary: getCampaignSummary(bootstrap),
   });
 }
