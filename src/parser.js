@@ -1,4 +1,5 @@
 import deepFreeze from 'deep-freeze';
+import parseUrl from 'url-parse';
 
 function* labelUrls(annotatedText) {
   let label = null;
@@ -87,9 +88,24 @@ function createAnnotatedText(element) {
       const isHashTag = isLink && child.textContent.startsWith('#');
 
       if (isLink && !isHashTag) {
-        // We assume all links are a single line. This seems to be true as
-        // enforced by YouTube's description editor.
-        currentLine.push({ url: child.textContent });
+        // YouTube links come in two flavors:
+        //
+        // 1. A link as we'd expect: <a href='http://google.com'>
+        // 2. A tracking link: <a href='/redirect?q=google.com'>
+        //
+        // Here we detect which we're dealing with and extract the link.
+        const url = child.parentElement.href;
+        const parsedUrl = parseUrl(url, true);
+
+        if (
+          parsedUrl.pathname == '/redirect' &&
+          parsedUrl.host == location.host &&
+          parsedUrl.query['q']
+        ) {
+          currentLine.push({ url: parsedUrl.query['q'] });
+        } else {
+          currentLine.push({ url });
+        }
       } else {
         const sublines = child.textContent.split('\n');
         appendText(sublines[0]);
