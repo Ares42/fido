@@ -62,6 +62,10 @@ export default {
       this.metadata = parseDescription(element);
     },
   },
+
+  mounted() {
+    this.parseAndLoad_();
+  },
 };
 </script>
 
