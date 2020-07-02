@@ -31,6 +31,13 @@ function getLatestGoal(bootstrap) {
     return null;
   }
 
+  // Reorder the goals in descending order of completion progress. We always
+  // want to show the user the goal that's closest to completion.
+  goals.sort(
+    (a, b) =>
+      b.attributes.completed_percentage - a.attributes.completed_percentage
+  );
+
   // Try and find the latest incomplete goal, fallback to the latest completed goal.
   const goal =
     goals.find((goal) => goal.attributes.completed_percentage < 100) ||
