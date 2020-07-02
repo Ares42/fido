@@ -1,28 +1,6 @@
 import deepFreeze from 'deep-freeze';
 import parseUrl from 'url-parse';
 
-function* labelUrls(annotatedText) {
-  let label = null;
-  for (const line of annotatedText) {
-    if (line.length == 1 && 'url' in line[0]) {
-      yield { label, url: line[0].url };
-      continue;
-    }
-
-    label = line.length == 1 && 'text' in line[0] ? line[0].text : null;
-
-    if (line.length == 2 && 'text' in line[0] && 'url' in line[1]) {
-      yield { label: line[0].text, url: line[1].url };
-      continue;
-    }
-
-    const urls = line.filter((parcel) => 'url' in parcel);
-    for (const { url } of urls) {
-      yield { label: null, url };
-    }
-  }
-}
-
 // Decomposes the DOM given a root element into an annotated version of
 // `innerText` split by lines.
 //
@@ -122,6 +100,47 @@ function createAnnotatedText(element) {
   return lines;
 }
 
+function* labelUrls(annotatedText) {
+  let label = null;
+  for (const line of annotatedText) {
+    if (line.length == 1 && 'url' in line[0]) {
+      yield { label, url: line[0].url };
+      continue;
+    }
+
+    label = line.length == 1 && 'text' in line[0] ? line[0].text : null;
+
+    if (line.length == 2 && 'text' in line[0] && 'url' in line[1]) {
+      yield { label: line[0].text, url: line[1].url };
+      continue;
+    }
+
+    const urls = line.filter((parcel) => 'url' in parcel);
+    for (const { url } of urls) {
+      yield { label: null, url };
+    }
+  }
+}
+
+function* createWidgets(urls) {
+  const unknownUrls = [];
+  for (const { label, url } of urls) {
+    if (url.match(/patreon\.com/)) {
+      yield { type: 'patreon', url };
+      continue;
+    }
+
+    unknownUrls.push({ label, url });
+  }
+
+  if (unknownUrls.length) {
+    yield {
+      type: 'unknown',
+      links: unknownUrls,
+    };
+  }
+}
+
 export function parseDescription(element) {
   const annotatedText = deepFreeze(createAnnotatedText(element));
   return {
@@ -129,6 +148,6 @@ export function parseDescription(element) {
       html: element.innerHTML,
       annotatedText,
     },
-    urls: [...labelUrls(annotatedText)],
+    widgets: [...createWidgets(labelUrls(annotatedText))],
   };
 }

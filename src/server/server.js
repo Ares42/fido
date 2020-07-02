@@ -3,9 +3,11 @@ import express from 'express';
 import minimist from 'minimist';
 
 import * as patreonInfo from './apis/patreonInfo.js';
+import * as favicon from './apis/favicon.js';
 
 const routes = {
   '/api/v1/patreonInfo': patreonInfo,
+  '/api/v1/favicon': favicon,
 };
 
 function main(positionalArgs, keywordArgs) {

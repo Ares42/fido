@@ -1,8 +1,8 @@
 <template>
-  <div :class="$style.Host">
-    <template v-for="url in widgets">
-      <PatreonWidget :url="url.url" v-if="url.type == 'patreon'" />
-      <UrlWidget :label="url.label" :url="url.url" v-else />
+  <div :class="$style.Host" v-if="metadata">
+    <template v-for="widget in metadata.widgets">
+      <PatreonWidget :url="widget.url" v-if="widget.type == 'patreon'" />
+      <UrlWidget :links="widget.links" v-if="widget.type == 'unknown'" />
     </template>
   </div>
 </template>
@@ -16,16 +16,6 @@ export default {
 
   props: {
     metadata: Object,
-  },
-
-  computed: {
-    widgets() {
-      if (!this.metadata) return [];
-      return this.metadata.urls.map((url) => ({
-        type: url.url.indexOf('patreon.com') != -1 ? 'patreon' : null,
-        ...url,
-      }));
-    },
   },
 };
 </script>
@@ -41,7 +31,6 @@ export default {
     border-radius: 6px;
     margin: 16px;
     overflow: hidden;
-    padding: 11px;
   }
 }
 </style>

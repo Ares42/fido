@@ -56,7 +56,9 @@ export default {
 <style module lang="sass">
 @import '@/src/sass/fonts';
 
-.Host {}
+.Host {
+  padding: 15px;
+}
 
 .Icon {
   height: 23px;
