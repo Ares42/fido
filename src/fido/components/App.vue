@@ -6,8 +6,8 @@
 </template>
 
 <script>
-import TopBar from '@/src/fido/TopBar';
-import Widgets from '@/src/fido/Widgets';
+import TopBar from '@/src/fido/components/TopBar';
+import Widgets from '@/src/fido/components/Widgets';
 
 export default {
   components: { TopBar, Widgets },
@@ -19,8 +19,8 @@ export default {
 </script>
 
 <style module lang="sass">
-@import '@/src/sass/fonts';
-@import '@/src/sass/layout';
+@import '@/src/fido/sass/fonts';
+@import '@/src/fido/sass/layout';
 
 .Host {
   @include fonts-clear;

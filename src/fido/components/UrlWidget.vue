@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import OtherLinksIcon from '@/src/assets/images/other_links.png';
+import OtherLinksIcon from '@/src/fido/assets/other_links.png';
 
 export default {
   props: {
@@ -72,8 +72,8 @@ export default {
 </script>
 
 <style module lang="sass">
-@import '@/src/sass/fonts';
-@import '@/src/sass/layout';
+@import '@/src/fido/sass/fonts';
+@import '@/src/fido/sass/layout';
 
 .Host {
 }

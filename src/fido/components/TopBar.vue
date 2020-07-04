@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import IconImage from '@/src/assets/images/icon.png';
+import IconImage from '@/src/fido/icon.png';
 
 export default {
   data() {

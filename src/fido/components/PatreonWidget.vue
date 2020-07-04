@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import PatreonIcon from '@/src/assets/images/patreon.svg';
+import PatreonIcon from '@/src/fido/assets/patreon.svg';
 
 export default {
   props: {
@@ -54,7 +54,7 @@ export default {
 </script>
 
 <style module lang="sass">
-@import '@/src/sass/fonts';
+@import '@/src/fido/sass/fonts';
 
 .Host {
   padding: 15px;

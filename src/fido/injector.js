@@ -1,8 +1,9 @@
 import Vue from 'vue';
 
-import App from '@/src/fido/App';
 import { backOff } from 'exponential-backoff';
-import { parseDescription } from '@/src/parser';
+
+import App from '@/src/fido/components/App';
+import { parseDescription } from '@/src/fido/parser';
 
 async function waitFor(predicate) {
   return await backOff(

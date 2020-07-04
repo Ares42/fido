@@ -25,9 +25,9 @@ import 'codemirror/lib/codemirror.css?raw';
 import 'codemirror/mode/xml/xml.js';
 import 'codemirror/theme/base16-dark.css?raw';
 
-import Fido from '@/src/fido/App';
+import Fido from '@/src/fido/components/App';
 
-import { parseDescription } from '@/src/parser';
+import { parseDescription } from '@/src/fido/parser';
 
 export default {
   components: { codemirror, Fido },
@@ -70,8 +70,8 @@ export default {
 </script>
 
 <style module lang="sass">
-@import '@/src/sass/fonts';
-@import '@/src/sass/layout';
+@import '@/src/fido/sass/fonts';
+@import '@/src/fido/sass/layout';
 
 .Host {
   @include layout-fill;
@@ -140,8 +140,7 @@ export default {
 </style>
 
 <style lang="sass">
-@import '@/src/sass/fonts';
-@import '@/src/sass/layout';
+@import '@/src/fido/sass/fonts';
 
 * {
   font-size: inherit;

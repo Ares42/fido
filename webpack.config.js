@@ -119,8 +119,8 @@ const BaseConfig = {
 
 const FidoConfig = merge(BaseConfig, {
   entry: {
-    injector: path.join(__dirname, 'src/injector.js'),
-    background: path.join(__dirname, 'src/background.js'),
+    injector: path.join(__dirname, 'src/fido/injector.js'),
+    background: path.join(__dirname, 'src/fido/background.js'),
   },
 
   output: {
@@ -131,7 +131,7 @@ const FidoConfig = merge(BaseConfig, {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: path.join(__dirname, 'src/manifest/manifest.json'),
+          from: path.join(__dirname, 'src/fido/manifest.json'),
           transform(content) {
             return JSON.stringify(
               JSON.parse(stripJsonComments(content.toString()))
@@ -139,7 +139,7 @@ const FidoConfig = merge(BaseConfig, {
           },
         },
         ...[16, 32, 48, 64, 128, 256].map((size) => ({
-          from: path.join(__dirname, 'src/manifest/icon.png'),
+          from: path.join(__dirname, 'src/fido/icon.png'),
           to: `icons/${size}.png`,
           transform(content) {
             return sharp(content).resize(size, size).toBuffer();
@@ -148,7 +148,7 @@ const FidoConfig = merge(BaseConfig, {
       ],
     }),
     new CopyWebpackPlugin({
-      patterns: [{ from: path.join(__dirname, 'src/background.html') }],
+      patterns: [{ from: path.join(__dirname, 'src/fido/background.html') }],
     }),
   ],
 });

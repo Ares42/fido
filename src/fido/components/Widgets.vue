@@ -8,8 +8,8 @@
 </template>
 
 <script>
-import PatreonWidget from '@/src/fido/PatreonWidget';
-import UrlWidget from '@/src/fido/UrlWidget';
+import PatreonWidget from '@/src/fido/components/PatreonWidget';
+import UrlWidget from '@/src/fido/components/UrlWidget';
 
 export default {
   components: { PatreonWidget, UrlWidget },
