@@ -12,6 +12,27 @@ const { VueLoaderPlugin } = require('vue-loader');
 const WriteFilePlugin = require('write-file-webpack-plugin');
 const nodeExternals = require('webpack-node-externals');
 
+const secrets = (() => {
+  try {
+    return require('./secrets.json');
+  } catch (error) {
+    if (error.code == 'MODULE_NOT_FOUND') {
+      console.error('❌ You need to run `cli/fido.js pull-secrets`');
+    } else {
+      console.error(error);
+    }
+
+    process.exit(1);
+  }
+})();
+
+function injectSecrets(text) {
+  for (const [key, value] of Object.entries(secrets)) {
+    text = text.replace(new RegExp(`__secret:${key}__`, 'g'), value);
+  }
+  return text;
+}
+
 function envSelector(options) {
   if (!(process.env.NODE_ENV in options)) {
     throw 'Missing environment option for label: ' + process.env.NODE_ENV;
@@ -112,6 +133,9 @@ const BaseConfig = {
     new CleanWebpackPlugin(),
     new webpack.EnvironmentPlugin(['NODE_ENV']),
     new webpack.DefinePlugin({ 'process.fido': JSON.stringify(process.fido) }),
+    new webpack.DefinePlugin({
+      'process.fido.secrets': JSON.stringify(secrets),
+    }),
     new VueLoaderPlugin(),
     new WriteFilePlugin(),
   ],
@@ -202,11 +226,21 @@ const ServerConfig = merge(BaseConfig, {
         scripts: {
           start: 'node server.bundle.js',
         },
+        engines: {
+          node: '10.x',
+        },
       },
       path.join(__dirname, 'package.json')
     ),
     new CopyWebpackPlugin({
-      patterns: [{ from: path.join(__dirname, 'src/server/app.yaml') }],
+      patterns: [
+        {
+          from: path.join(__dirname, 'src/server/app.yaml'),
+          transform(content) {
+            return injectSecrets(content.toString());
+          },
+        },
+      ],
     }),
   ],
 });

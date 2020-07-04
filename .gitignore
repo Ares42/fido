@@ -22,3 +22,9 @@ npm-debug.log*
 
 # Ignore Vim swap files.
 .*.swp
+
+# Ignore redis binary dump (dump.rdb) files
+*.rdb
+
+# Ignore sensitive information
+secrets.json

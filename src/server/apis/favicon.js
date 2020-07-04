@@ -1,11 +1,24 @@
 import getFavicons from 'get-website-favicon';
 
-export async function get(request, response) {
-  const { icons } = await getFavicons(request.query.url);
-  if (!icons.length) {
-    response.json({ src: null });
-    return;
-  }
+import { cacheGuard } from '@/src/server/apis/shared/caching';
 
-  response.json({ src: icons[0].src });
+async function getFavicon(url) {
+  const { icons } = await getFavicons(url);
+  if (!icons.length) {
+    return null;
+  }
+  return icons[0].src;
+}
+
+export async function get(environment, request, response) {
+  const url = new URL(request.query.url);
+
+  response.json(
+    await cacheGuard(
+      environment,
+      `favicon:${url.host}`,
+      async () => ({ src: await getFavicon(url.origin) }),
+      { ttl: 30 * 60 * 1000 }
+    )
+  );
 }

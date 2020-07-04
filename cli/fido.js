@@ -9,6 +9,7 @@ const COMMANDS = {
   build: () => require('./commands/build.js'),
   'build-server': () => require('./commands/build-server.js'),
   'deploy-server': () => require('./commands/deploy-server.js'),
+  'pull-secrets': () => require('./commands/pull-secrets.js'),
 };
 
 function main(positionalArgs, keywordArgs) {

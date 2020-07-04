@@ -33,6 +33,8 @@ pre-commit install
 
 ```sh
 npm install
+
+cli/fido.js pull-secrets
 ```
 
 ### Local Development

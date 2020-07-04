@@ -2,17 +2,21 @@ import cors from 'cors';
 import express from 'express';
 import minimist from 'minimist';
 
-import * as patreonInfo from './apis/patreonInfo.js';
-import * as favicon from './apis/favicon.js';
+import { createEnvironment } from '@/src/server/environment.js';
+
+import * as patreonInfo from '@/src/server/apis/patreonInfo.js';
+import * as favicon from '@/src/server/apis/favicon.js';
 
 const routes = {
   '/api/v1/patreonInfo': patreonInfo,
   '/api/v1/favicon': favicon,
 };
 
-function main(positionalArgs, keywordArgs) {
+async function main(positionalArgs, keywordArgs) {
   // process.env.PORT is supplied by the GAE runtime.
   const port = process.env.PORT || keywordArgs.port || 8080;
+
+  const environment = await createEnvironment();
 
   const app = express();
   app.use(cors());
@@ -21,7 +25,7 @@ function main(positionalArgs, keywordArgs) {
   const methods = ['get', 'post', 'put', 'patch', 'delete'];
   const attachController = (method, path, controller) => {
     app[method](path, async (request, response, next) => {
-      Promise.resolve(controller(request, response, next)).catch((error) => {
+      controller(environment, request, response).catch((error) => {
         console.error(error);
         response.status(500);
         response.json({ error });
@@ -46,10 +50,8 @@ function main(positionalArgs, keywordArgs) {
   const positionalArgs = args._;
   delete args._;
 
-  try {
-    main(positionalArgs, args);
-  } catch (error) {
+  main(positionalArgs, args).catch((error) => {
     console.error(error);
     process.exit(1);
-  }
+  });
 })();

@@ -2,6 +2,8 @@ import fetch from 'node-fetch';
 import safeEval from 'safe-eval';
 import stripHtml from 'string-strip-html';
 
+import { cacheGuard } from '@/src/server/apis/shared/caching';
+
 async function getPatreonBootstrap(url) {
   const page = await fetch(url).then((response) => response.text());
 
@@ -49,17 +51,18 @@ function getLatestGoal(bootstrap) {
   };
 }
 
-async function main() {
-  const userId = process.argv[2];
-  if (!userId) {
-    console.error(chalk.red('Missing positional arg: <userId>'));
-    process.exit(1);
-  }
-}
+export async function get(environment, request, response) {
+  const url = request.query.url;
 
-export async function get(request, response) {
-  const bootstrap = await getPatreonBootstrap(request.query.url);
-  response.json({
-    goal: getLatestGoal(bootstrap),
-  });
+  response.json(
+    await cacheGuard(
+      environment,
+      `patreon:${url}`,
+      async () => {
+        const bootstrap = await getPatreonBootstrap(url);
+        return { goal: getLatestGoal(bootstrap) };
+      },
+      { ttl: 5 * 60 * 1000 }
+    )
+  );
 }

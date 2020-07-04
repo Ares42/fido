@@ -6,6 +6,37 @@ const webpack = require('webpack');
 
 const webpackHelpers = require('./shared/webpack.js');
 
+function startRedis({ verbose }) {
+  return new Promise((resolve, reject) => {
+    const redis = spawn('redis-server');
+
+    redis.once('error', (error) => {
+      console.log(error.stack);
+      console.error('❌ [redis] Refused to start! Is redis-server installed?');
+      process.exit(1);
+    });
+
+    redis.once('exit', (exitStatus) => {
+      if (exitStatus != 0) {
+        console.error('❌ [redis] Crashed!');
+        process.exit(1);
+      } else {
+        console.error('🤔 [redis] Exited... successfully?');
+      }
+    });
+
+    redis.stdout.on('data', (data) => {
+      if (verbose) {
+        console.log(`[redis] ${data.toString()}`);
+      }
+      if (data.toString().indexOf('Ready to accept connections') != -1) {
+        console.log('✅ [redis] Ready');
+        resolve();
+      }
+    });
+  });
+}
+
 function assertNoWebpackErrors(error) {
   if (!webpackHelpers.webpackOk(error)) {
     webpackHelpers.logWebpackError(error);
@@ -108,6 +139,8 @@ module.exports = {
         server: `http://${args.host}:${args['server-port']}`,
       },
     };
+
+    await startRedis({ verbose: args.verbose });
 
     watchAndRunServer({
       port: args['server-port'],
