@@ -6,6 +6,7 @@ const webpack = require('webpack');
 
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const GeneratePackageJsonPlugin = require('generate-package-json-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { VueLoaderPlugin } = require('vue-loader');
 const WriteFilePlugin = require('write-file-webpack-plugin');
@@ -130,7 +131,7 @@ const FidoConfig = merge(BaseConfig, {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: 'src/manifest/manifest.json',
+          from: path.join(__dirname, 'src/manifest/manifest.json'),
           transform(content) {
             return JSON.stringify(
               JSON.parse(stripJsonComments(content.toString()))
@@ -138,7 +139,7 @@ const FidoConfig = merge(BaseConfig, {
           },
         },
         ...[16, 32, 48, 64, 128, 256].map((size) => ({
-          from: 'src/manifest/icon.png',
+          from: path.join(__dirname, 'src/manifest/icon.png'),
           to: `icons/${size}.png`,
           transform(content) {
             return sharp(content).resize(size, size).toBuffer();
@@ -147,7 +148,7 @@ const FidoConfig = merge(BaseConfig, {
       ],
     }),
     new CopyWebpackPlugin({
-      patterns: [{ from: 'src/background.html' }],
+      patterns: [{ from: path.join(__dirname, 'src/background.html') }],
     }),
   ],
 });
@@ -188,7 +189,26 @@ const ServerConfig = merge(BaseConfig, {
   },
 
   target: 'node',
-  externals: [nodeExternals()],
+  externals: [
+    nodeExternals({
+      modulesDir: path.join(__dirname, 'node_modules'),
+    }),
+  ],
+
+  plugins: [
+    new GeneratePackageJsonPlugin(
+      {
+        name: 'fido-server',
+        scripts: {
+          start: 'node server.bundle.js',
+        },
+      },
+      path.join(__dirname, 'package.json')
+    ),
+    new CopyWebpackPlugin({
+      patterns: [{ from: path.join(__dirname, 'src/server/app.yaml') }],
+    }),
+  ],
 });
 
 module.exports = {

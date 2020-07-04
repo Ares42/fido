@@ -5,8 +5,10 @@ const minimist = require('minimist');
 const Args = require('./args.js');
 
 const COMMANDS = {
-  build: () => require('./commands/build.js'),
   'run-local': () => require('./commands/run-local.js'),
+  build: () => require('./commands/build.js'),
+  'build-server': () => require('./commands/build-server.js'),
+  'deploy-server': () => require('./commands/deploy-server.js'),
 };
 
 function main(positionalArgs, keywordArgs) {
@@ -35,10 +37,18 @@ function main(positionalArgs, keywordArgs) {
     process.exit(1);
   }
 
-  command.run(
-    positionalArgs.slice(1),
-    Args.parse(command.arguments || {}, keywordArgs)
-  );
+  command
+    .run(
+      positionalArgs.slice(1),
+      Args.parse(command.arguments || {}, keywordArgs)
+    )
+    .then((exitStatus) => {
+      process.exit(exitStatus);
+    })
+    .catch((error) => {
+      console.log(error);
+      process.exit(1);
+    });
 }
 
 (() => {

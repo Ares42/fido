@@ -1,42 +1,14 @@
-const Duration = require('format-duration-time').default;
 const Server = require('webpack-dev-server');
 const createLogger = require('webpack-dev-server/lib/utils/createLogger');
 const path = require('path');
 const { spawn } = require('child_process');
 const webpack = require('webpack');
 
-function createBuildCallback(name, { verbose }) {
-  return (stats) => {
-    if (stats.hasErrors() || stats.hasWarnings() || verbose) {
-      console.log(stats.toString({ colors: true }));
-    }
-
-    const elapsedMilliseconds = stats.endTime - stats.startTime;
-    const elapsedString = Duration(elapsedMilliseconds).format('m[m] s[s]');
-    if (stats.hasErrors()) {
-      console.log(`❌ [${name}] Build failed [${elapsedString}]`);
-    } else {
-      console.log(`✅ [${name}] Built successfully [${elapsedString}]`);
-    }
-  };
-}
-
-function createRunCallback(name) {
-  return (compiler) => {
-    for (const fileName of Object.keys(
-      compiler.watchFileSystem.watcher.mtimes
-    )) {
-      console.log(`⏰ [${name}] ${fileName}`);
-    }
-  };
-}
+const webpackHelpers = require('./shared/webpack.js');
 
 function assertNoWebpackErrors(error) {
-  if (error) {
-    console.error(error.stack || error);
-    if (error.details) {
-      console.error(error.details);
-    }
+  if (!webpackHelpers.webpackOk(error)) {
+    webpackHelpers.logWebpackError(error);
     process.exit(1);
   }
 }
@@ -45,8 +17,12 @@ function watchAndRunServer({ port, verbose }) {
   const { ServerConfig } = require('../../webpack.config');
   const compiler = webpack(ServerConfig);
 
-  compiler.hooks.watchRun.tap('fido', createRunCallback('server'));
-  compiler.hooks.done.tap('fido', createBuildCallback('server', { verbose }));
+  compiler.hooks.watchRun.tap('fido', () => {
+    webpackHelpers.logChangedFiles(compiler, { namespace: 'server' });
+  });
+  compiler.hooks.done.tap('fido', (stats) => {
+    webpackHelpers.logBuildStats(stats, { verbose, namespace: 'server' });
+  });
 
   let server;
   compiler.watch({ ignored: [/node_modules/] }, (error, stats) => {
@@ -54,7 +30,7 @@ function watchAndRunServer({ port, verbose }) {
 
     // Is the build failed, but we're still watching, don't restart the server.
     // Wait for a passing build.
-    if (stats.hasErrors()) return;
+    if (!webpackHelpers.buildOk(stats)) return;
 
     if (server) {
       console.log('🔄 [server] Restarting the server');
@@ -83,8 +59,12 @@ function startFido({ host, port, verbose }) {
     createLogger({ noInfo: !verbose })
   );
 
-  compiler.hooks.watchRun.tap('fido', createRunCallback('fido'));
-  compiler.hooks.done.tap('fido', createBuildCallback('fido', { verbose }));
+  compiler.hooks.watchRun.tap('fido', () => {
+    webpackHelpers.logChangedFiles(compiler, { namespace: 'fido' });
+  });
+  compiler.hooks.done.tap('fido', (stats) => {
+    webpackHelpers.logBuildStats(stats, { verbose, namespace: 'fido' });
+  });
 
   server.listen(port, host, (error) => {
     assertNoWebpackErrors(error);
@@ -121,7 +101,7 @@ module.exports = {
     },
   },
 
-  run(_, args) {
+  async run(_, args) {
     process.env.NODE_ENV = args.env;
     process.fido = {
       flags: {
@@ -138,5 +118,7 @@ module.exports = {
       port: args['fido-port'],
       verbose: args.verbose,
     });
+
+    return new Promise(() => {});
   },
 };

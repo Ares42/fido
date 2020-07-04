@@ -1,27 +1,6 @@
-const Duration = require('format-duration-time').default;
 const webpack = require('webpack');
 
-function buildCallback(error, stats, { verbose }) {
-  if (error) {
-    console.error(error.stack || error);
-    if (error.details) {
-      console.error(error.details);
-    }
-    process.exit(1);
-  }
-
-  if (stats.hasErrors() || stats.hasWarnings() || verbose) {
-    console.log(stats.toString({ colors: true }));
-  }
-
-  const elapsedMilliseconds = stats.endTime - stats.startTime;
-  const elapsedString = Duration(elapsedMilliseconds).format('m[m] s[s]');
-  if (stats.hasErrors()) {
-    console.log(`❌ Build failed [${elapsedString}]`);
-  } else {
-    console.log(`✅ Built successfully [${elapsedString}]`);
-  }
-}
+const webpackHelpers = require('./shared/webpack.js');
 
 module.exports = {
   arguments: {
@@ -31,10 +10,9 @@ module.exports = {
       default: 'local',
     },
 
-    config: {
-      type: String,
-      default: 'Fido',
-      values: ['Fido', 'DevServer', 'Server'],
+    'dev-server': {
+      type: Boolean,
+      default: false,
     },
 
     'local-server': {
@@ -48,21 +26,23 @@ module.exports = {
     },
   },
 
-  run(_, args) {
+  async run(_, args) {
     process.env.NODE_ENV = args.env;
     process.fido = {
       flags: {
         server: {
-          production: 'https://fido.com',
+          production: 'https://terrace-fido.uc.r.appspot.com',
           local: args['local-server'],
         }[args.env],
       },
     };
 
-    const config = require('../../webpack.config')[`${args.config}Config`];
+    const configs = require('../../webpack.config');
+    const config = args['dev-server']
+      ? configs.DevServerConfig
+      : configs.FidoConfig;
+
     const compiler = webpack(config);
-    compiler.run((error, stats) => {
-      buildCallback(error, stats, { verbose: args.verbose });
-    });
+    return webpackHelpers.run(compiler, { verbose: args.verbose });
   },
 };

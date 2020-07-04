@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "permissions": [
     "activeTab", // required for content script injection
-    "tabs" // required to detect url changes
+    "tabs", // required to detect url changes
+    "*://terrace-fido.uc.r.appspot.com/*"
   ],
 
   "description": "",
