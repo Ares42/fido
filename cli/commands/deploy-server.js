@@ -23,7 +23,13 @@ module.exports = {
     return new Promise((resolve, reject) => {
       const gcloud = spawn(
         'gcloud',
-        ['app', 'deploy', path.join(__dirname, '../../build/server')],
+        [
+          'app',
+          'deploy',
+          path.join(__dirname, '../../build/server'),
+          '--project',
+          'terrace-fido',
+        ],
         { stdio: [process.stdin, process.stdout, process.stderr] }
       );
       gcloud.on('exit', (exitStatus) => {
