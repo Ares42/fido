@@ -13,7 +13,7 @@ function spawnServer(compiler) {
 
   waitForExit(subprocess).then(({ cause }) => {
     if (cause == 'external') {
-      console.log('❌ [server] Died. Will restart after next compilation.');
+      console.log('❌ [server] Died');
     }
   });
 
