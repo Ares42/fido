@@ -2,6 +2,7 @@ import { promisify } from 'util';
 
 import redis from 'redis';
 import redisCommands from 'redis-commands';
+import TwitchClient from 'twitch';
 
 async function connectRedisClient() {
   const redisHost = process.env.REDISHOST || 'localhost';
@@ -36,8 +37,16 @@ function createAsyncRedisClient(syncClient) {
   return asyncClient;
 }
 
+function createTwitchClient() {
+  return TwitchClient.withClientCredentials(
+    process.fido.secrets.twitchClientId,
+    process.fido.secrets.twitchClientSecret
+  );
+}
+
 export async function createEnvironment() {
   return {
     redis: createAsyncRedisClient(await connectRedisClient()),
+    twitch: createTwitchClient(),
   };
 }

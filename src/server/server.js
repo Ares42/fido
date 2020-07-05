@@ -3,12 +3,14 @@ import express from 'express';
 
 import { createEnvironment } from '@/src/server/environment.js';
 
-import * as patreonInfo from '@/src/server/apis/patreonInfo.js';
 import * as favicon from '@/src/server/apis/favicon.js';
+import * as patreonInfo from '@/src/server/apis/patreonInfo.js';
+import * as twitch from '@/src/server/apis/twitch.js';
 
 const routes = {
   '/api/v1/patreonInfo': patreonInfo,
   '/api/v1/favicon': favicon,
+  '/api/v1/twitch': twitch,
 };
 
 async function main() {
