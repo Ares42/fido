@@ -45,6 +45,7 @@
     "deep-freeze": "0.0.1",
     "exponential-backoff": "^3.0.1",
     "express": "^4.17.1",
+    "genius-lyrics-api": "^3.0.2",
     "get-website-favicon": "0.0.7",
     "node-fetch": "^2.6.0",
     "prompt-confirm": "^2.0.4",

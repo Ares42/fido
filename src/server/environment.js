@@ -1,5 +1,6 @@
 import { promisify } from 'util';
 
+import * as geniusApi from 'genius-lyrics-api';
 import redis from 'redis';
 import redisCommands from 'redis-commands';
 
@@ -39,5 +40,19 @@ function createAsyncRedisClient(syncClient) {
 export async function createEnvironment() {
   return {
     redis: createAsyncRedisClient(await connectRedisClient()),
+    genius: {
+      getLyrics({ url, title, artist }) {
+        return geniusApi.getLyrics(
+          url
+            ? url
+            : {
+                title,
+                artist,
+                optimizeQuery: true,
+                apiKey: process.fido.secrets.geniusAPIKey,
+              }
+        );
+      },
+    },
   };
 }
