@@ -13,7 +13,7 @@ async function getChannelSummary(environment, username) {
     user: {
       name: user.displayName,
       logo: user.profilePictureUrl,
-      description: user.description,
+      description: user.description.trim() || null,
     },
     stream: stream
       ? {
