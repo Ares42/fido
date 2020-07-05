@@ -6,6 +6,31 @@ const Confirm = require('prompt-confirm');
 const Args = require('./shared/args.js');
 const buildServer = require('./build-server.js');
 
+function gitFetchOriginMaster({ verbose }) {
+  const command = ['git', 'fetch', 'origin', 'master'];
+  if (verbose) {
+    console.log(chalk.gray(`👟 ${command.join(' ')}`));
+  }
+
+  const { status } = spawnSync(command[0], command.slice(1), {
+    stdio: [
+      process.stdin,
+      verbose ? process.stdout : null,
+      verbose ? process.stderr : null,
+    ],
+  });
+
+  if (status == null) {
+    console.error('❌  Process cancelled by signal');
+    return 1;
+  } else if (status != 0) {
+    console.error('❌ Failed to fetch origin/master');
+    return status;
+  }
+
+  return 0;
+}
+
 function gitUpdateIndex() {
   const { status } = spawnSync('git', ['update-index', '-q', '--refresh'], {
     stdio: [process.stdin, process.stdout, process.stderr],
@@ -40,8 +65,13 @@ function gitGetChangedFiles() {
   return stdout;
 }
 
-async function confirmCleanBuild() {
-  const exitStatus = gitUpdateIndex();
+async function confirmCleanBuild({ verbose }) {
+  let exitStatus = gitFetchOriginMaster({ verbose });
+  if (exitStatus != 0) {
+    return exitStatus;
+  }
+
+  exitStatus = gitUpdateIndex();
   if (exitStatus != 0) {
     return exitStatus;
   }
@@ -62,7 +92,6 @@ async function confirmCleanBuild() {
           return 1;
         }
 
-        console.log();
         return 0;
       });
   }
@@ -139,7 +168,6 @@ async function confirmCleanSecrets() {
           return 1;
         }
 
-        console.log();
         return 0;
       });
   }
@@ -180,7 +208,7 @@ module.exports = {
   async run(_, args) {
     args = Args.parse(this.arguments, args);
 
-    let exitStatus = await confirmCleanBuild();
+    let exitStatus = await confirmCleanBuild({ verbose: args.verbose });
     if (exitStatus != 0) {
       return exitStatus;
     }
