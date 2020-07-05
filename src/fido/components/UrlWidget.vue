@@ -13,9 +13,11 @@
       :href="link.url"
     >
       <div :class="$style.Text">
-        <div :class="$style.Label" v-if="link.label">{{ link.label }}</div>
-        <div :class="$style.Url" :href="link.url" target="blank">
-          {{ link.url }}
+        <div>
+          <div :class="$style.Label" v-if="link.label">{{ link.label }}</div>
+          <div :class="$style.Url" :href="link.url" target="blank">
+            {{ link.url }}
+          </div>
         </div>
       </div>
       <div :class="$style.Favicon">
@@ -119,6 +121,8 @@ export default {
 }
 
 .Text {
+  @include layout-vertical-center;
+
   flex-grow: 1;
   overflow: hidden;
 }
@@ -139,7 +143,7 @@ export default {
 }
 
 .Favicon {
-  @include layout-center;
+  @include layout-vertical-center;
 
   flex-shrink: 0;
   margin-left: 15px;
