@@ -1,6 +1,5 @@
 import cors from 'cors';
 import express from 'express';
-import minimist from 'minimist';
 
 import { createEnvironment } from '@/src/server/environment.js';
 
@@ -12,9 +11,9 @@ const routes = {
   '/api/v1/favicon': favicon,
 };
 
-async function main(positionalArgs, keywordArgs) {
+async function main() {
   // process.env.PORT is supplied by the GAE runtime.
-  const port = process.env.PORT || keywordArgs.port || 8080;
+  const port = process.env.PORT || process.fido.flags.port || 8080;
 
   const environment = await createEnvironment();
 
@@ -45,13 +44,8 @@ async function main(positionalArgs, keywordArgs) {
   });
 }
 
-(() => {
-  const args = minimist(process.argv.slice(2));
-  const positionalArgs = args._;
-  delete args._;
-
-  main(positionalArgs, args).catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
-})();
+main().catch((error) => {
+  console.error(error);
+  console.error('Server experienced fatal startup error');
+  process.exit(1);
+});

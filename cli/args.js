@@ -25,7 +25,7 @@ function parseArgument(args, name, schema) {
       const FALSEY = ['no', 'false', 'off'];
       if (args[name] == true || TRUTHY.indexOf(args[name]) != -1) {
         return true;
-      } else if (FALSEY.indexOf(args[name]) != -1) {
+      } else if (args[name] == false || FALSEY.indexOf(args[name]) != -1) {
         return false;
       } else {
         console.error(

@@ -2,6 +2,10 @@
 //
 // __Note:__ the ttl argument is optional and specified in milliseconds.
 export async function cacheGuard(environment, key, asyncFunction, { ttl }) {
+  if (process.fido.flags.disableApiCache) {
+    return asyncFunction();
+  }
+
   const cacheResponse = await environment.redis.get(key);
   if (cacheResponse) {
     return JSON.parse(cacheResponse);

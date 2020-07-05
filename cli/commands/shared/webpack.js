@@ -56,7 +56,7 @@ function buildOk(stats) {
 // Executes the provided webpack compiler while logging errors + stats.
 //
 // Asynchronously returns a command line exit status (0 for pass, 1 for fail).
-async function run(compiler, { verbose }) {
+async function run(compiler, { verbose, namespace }) {
   return new Promise((resolve, reject) => {
     compiler.run((error, stats) => {
       if (!webpackOk(error)) {
@@ -65,8 +65,29 @@ async function run(compiler, { verbose }) {
         return;
       }
 
-      logBuildStats(stats, { verbose });
+      logBuildStats(stats, { verbose, namespace });
       resolve(buildOk(stats) ? 0 : 1);
+    });
+  });
+}
+
+// Variant of `run` which watches for subsequent changes and re-compiles.
+//
+// Asynchronously returns a command line exit status (0 for pass, 1 for fail).
+async function watch(compiler, { verbose, namespace }) {
+  return new Promise((resolve, reject) => {
+    compiler.hooks.watchRun.tap('fido', () => {
+      logChangedFiles(compiler, { namespace });
+    });
+    compiler.hooks.done.tap('fido', (stats) => {
+      logBuildStats(stats, { verbose, namespace });
+    });
+
+    compiler.watch({ ignored: [/node_modules/] }, (error, stats) => {
+      if (!webpackOk(error)) {
+        logWebpackError(error);
+        resolve(1);
+      }
     });
   });
 }
@@ -78,4 +99,5 @@ module.exports = {
   webpackOk,
   buildOk,
   run,
+  watch,
 };

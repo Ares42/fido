@@ -1,14 +1,11 @@
-const Server = require('webpack-dev-server');
-const createLogger = require('webpack-dev-server/lib/utils/createLogger');
-const path = require('path');
 const { spawn } = require('child_process');
-const webpack = require('webpack');
 
-const webpackHelpers = require('./shared/webpack.js');
+const buildFido = require('./build.js');
+const buildServer = require('./build-server.js');
 
-function startRedis({ verbose }) {
+function startRedis({ port, verbose }) {
   return new Promise((resolve, reject) => {
-    const redis = spawn('redis-server');
+    const redis = spawn('redis-server', ['--port', port]);
 
     redis.once('error', (error) => {
       console.log(error.stack);
@@ -37,72 +34,6 @@ function startRedis({ verbose }) {
   });
 }
 
-function assertNoWebpackErrors(error) {
-  if (!webpackHelpers.webpackOk(error)) {
-    webpackHelpers.logWebpackError(error);
-    process.exit(1);
-  }
-}
-
-function watchAndRunServer({ port, verbose }) {
-  const { ServerConfig } = require('../../webpack.config');
-  const compiler = webpack(ServerConfig);
-
-  compiler.hooks.watchRun.tap('fido', () => {
-    webpackHelpers.logChangedFiles(compiler, { namespace: 'server' });
-  });
-  compiler.hooks.done.tap('fido', (stats) => {
-    webpackHelpers.logBuildStats(stats, { verbose, namespace: 'server' });
-  });
-
-  let server;
-  compiler.watch({ ignored: [/node_modules/] }, (error, stats) => {
-    assertNoWebpackErrors(error);
-
-    // Is the build failed, but we're still watching, don't restart the server.
-    // Wait for a passing build.
-    if (!webpackHelpers.buildOk(stats)) return;
-
-    if (server) {
-      console.log('🔄 [server] Restarting the server');
-      server.kill();
-    }
-    server = spawn(
-      'node',
-      [path.join(compiler.outputPath, 'server.bundle.js'), '--port', port],
-      { stdio: [process.stdin, process.stdout, process.stderr] }
-    );
-  });
-}
-
-function startFido({ host, port, verbose }) {
-  const { DevServerConfig } = require('../../webpack.config');
-  const compiler = webpack(DevServerConfig);
-
-  const options = { hot: true, host, port };
-  if (!verbose) {
-    options.stats = 'minimal';
-  }
-
-  const server = new Server(
-    compiler,
-    options,
-    createLogger({ noInfo: !verbose })
-  );
-
-  compiler.hooks.watchRun.tap('fido', () => {
-    webpackHelpers.logChangedFiles(compiler, { namespace: 'fido' });
-  });
-  compiler.hooks.done.tap('fido', (stats) => {
-    webpackHelpers.logBuildStats(stats, { verbose, namespace: 'fido' });
-  });
-
-  server.listen(port, host, (error) => {
-    assertNoWebpackErrors(error);
-    console.log(`👂 [fido] Serving on ${host}:${port}`);
-  });
-}
-
 module.exports = {
   arguments: {
     env: {
@@ -111,9 +42,9 @@ module.exports = {
       default: 'local',
     },
 
-    host: {
-      type: String,
-      default: 'localhost',
+    'fido-port': {
+      type: Number,
+      default: 8080,
     },
 
     'server-port': {
@@ -121,9 +52,14 @@ module.exports = {
       default: 3000,
     },
 
-    'fido-port': {
+    'redis-port': {
       type: Number,
-      default: 8080,
+      default: 6379,
+    },
+
+    'api-cache': {
+      type: Boolean,
+      default: true,
     },
 
     verbose: {
@@ -136,20 +72,38 @@ module.exports = {
     process.env.NODE_ENV = args.env;
     process.fido = {
       flags: {
-        server: `http://${args.host}:${args['server-port']}`,
+        fido: {
+          server: `http://localhost:${args['server-port']}`,
+        },
+        server: {
+          redisPort: args['redis-port'],
+          disableApiCache: !args['api-cache'],
+        },
       },
     };
 
-    await startRedis({ verbose: args.verbose });
-
-    watchAndRunServer({
-      port: args['server-port'],
+    await startRedis({
+      port: args['redis-port'],
       verbose: args.verbose,
     });
-    startFido({
-      host: args.host,
-      port: args['fido-port'],
+
+    buildServer.run([], {
+      env: args.env,
       verbose: args.verbose,
+      watch: true,
+      run: true,
+      port: args['server-port'],
+      'api-cache': args['api-cache'],
+      'redis-port': args['redis-port'],
+    });
+
+    buildFido.run([], {
+      env: args.env,
+      verbose: args.verbose,
+      run: true,
+      'dev-server': true,
+      'dev-server-port': args['fido-port'],
+      'server-override': `http://localhost:${args['server-port']}`,
     });
 
     return new Promise(() => {});

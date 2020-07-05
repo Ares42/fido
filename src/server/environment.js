@@ -5,14 +5,18 @@ import redisCommands from 'redis-commands';
 
 async function connectRedisClient() {
   const redisHost = process.env.REDISHOST || 'localhost';
-  const redisPort = process.env.REDISPORT || 6379;
+  const redisPort = process.env.REDISPORT || process.fido.flags.redisPort;
 
   return new Promise((resolve, reject) => {
     const client = redis.createClient(redisPort, redisHost);
 
     client.on('error', (error) => {
-      console.error('[redis]', error);
-      reject();
+      if (error.stack) {
+        console.error(error.stack);
+      } else {
+        console.error(error);
+      }
+      reject('Failed to connect to Redis');
     });
 
     client.once('ready', () => {

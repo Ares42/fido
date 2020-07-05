@@ -33,15 +33,15 @@ function injectSecrets(text) {
   return text;
 }
 
-function envSelector(options) {
-  if (!(process.env.NODE_ENV in options)) {
-    throw 'Missing environment option for label: ' + process.env.NODE_ENV;
+function envSelector(env, options) {
+  if (!(env in options)) {
+    throw `Missing environment option for label: ${env}`;
   }
-  return options[process.env.NODE_ENV];
+  return options[env];
 }
 
-const BaseConfig = {
-  mode: envSelector({
+const BaseConfig = (env, flags) => ({
+  mode: envSelector(env, {
     production: 'production',
     local: 'development',
   }),
@@ -59,7 +59,7 @@ const BaseConfig = {
   },
 
   optimization: {
-    minimize: envSelector({
+    minimize: envSelector(env, {
       production: true,
       local: false,
     }),
@@ -103,7 +103,7 @@ const BaseConfig = {
                 loader: 'css-loader',
                 options: {
                   modules: {
-                    localIdentName: envSelector({
+                    localIdentName: envSelector(env, {
                       production: '[hash:base64]',
                       local: '[path][name]__[local]',
                     }),
@@ -120,7 +120,7 @@ const BaseConfig = {
         test: /\.(png|jpe?g|gif|svg)$/,
         loader: 'file-loader',
         options: {
-          name: envSelector({
+          name: envSelector(env, {
             production: 'static/images/[hash:base64].[ext]',
             local: 'static/images/[name].[hash:base64].[ext]',
           }),
@@ -131,119 +131,129 @@ const BaseConfig = {
 
   plugins: [
     new CleanWebpackPlugin(),
-    new webpack.EnvironmentPlugin(['NODE_ENV']),
-    new webpack.DefinePlugin({ 'process.fido': JSON.stringify(process.fido) }),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify(
+        envSelector(env, {
+          production: 'production',
+          local: 'development',
+        })
+      ),
+    }),
     new webpack.DefinePlugin({
       'process.fido.secrets': JSON.stringify(secrets),
     }),
+    new webpack.DefinePlugin({ 'process.fido.flags': JSON.stringify(flags) }),
     new VueLoaderPlugin(),
     new WriteFilePlugin(),
   ],
-};
+});
 
-const FidoConfig = merge(BaseConfig, {
-  entry: {
-    injector: path.join(__dirname, 'src/fido/injector.js'),
-    background: path.join(__dirname, 'src/fido/background.js'),
-  },
+const FidoConfig = (env, flags) =>
+  merge(BaseConfig(env, flags), {
+    entry: {
+      injector: path.join(__dirname, 'src/fido/injector.js'),
+      background: path.join(__dirname, 'src/fido/background.js'),
+    },
 
-  output: {
-    path: path.join(__dirname, 'build/fido'),
-  },
+    output: {
+      path: path.join(__dirname, 'build/fido'),
+    },
 
-  plugins: [
-    new CopyWebpackPlugin({
-      patterns: [
+    plugins: [
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            from: path.join(__dirname, 'src/fido/manifest.json'),
+            transform(content) {
+              return JSON.stringify(
+                JSON.parse(stripJsonComments(content.toString()))
+              );
+            },
+          },
+          ...[16, 32, 48, 64, 128, 256].map((size) => ({
+            from: path.join(__dirname, 'src/fido/icon.png'),
+            to: `icons/${size}.png`,
+            transform(content) {
+              return sharp(content).resize(size, size).toBuffer();
+            },
+          })),
+        ],
+      }),
+      new CopyWebpackPlugin({
+        patterns: [{ from: path.join(__dirname, 'src/fido/background.html') }],
+      }),
+    ],
+  });
+
+const DevServerConfig = (env, flags) =>
+  merge(BaseConfig(env, flags), {
+    devtool: 'source-map',
+
+    entry: {
+      'dev-server': path.join(__dirname, 'src/dev-server/main.js'),
+    },
+
+    output: {
+      path: path.join(__dirname, 'build/dev-server'),
+    },
+
+    plugins: [
+      new HtmlWebpackPlugin({
+        inject: false,
+        template: require('html-webpack-template'),
+        title: 'Fido Dev Server',
+        mobile: true,
+        hash: true,
+        lang: 'en-US',
+        appMountId: 'app',
+        chunks: ['dev-server'],
+        inject: true,
+      }),
+    ],
+  });
+
+const ServerConfig = (env, flags) =>
+  merge(BaseConfig(env, flags), {
+    entry: {
+      server: path.join(__dirname, 'src/server/server.js'),
+    },
+
+    output: {
+      path: path.join(__dirname, 'build/server'),
+    },
+
+    target: 'node',
+    externals: [
+      nodeExternals({
+        modulesDir: path.join(__dirname, 'node_modules'),
+      }),
+    ],
+
+    plugins: [
+      new GeneratePackageJsonPlugin(
         {
-          from: path.join(__dirname, 'src/fido/manifest.json'),
-          transform(content) {
-            return JSON.stringify(
-              JSON.parse(stripJsonComments(content.toString()))
-            );
+          name: 'fido-server',
+          scripts: {
+            start: 'node server.bundle.js',
+          },
+          engines: {
+            node: '10.x',
           },
         },
-        ...[16, 32, 48, 64, 128, 256].map((size) => ({
-          from: path.join(__dirname, 'src/fido/icon.png'),
-          to: `icons/${size}.png`,
-          transform(content) {
-            return sharp(content).resize(size, size).toBuffer();
+        path.join(__dirname, 'package.json')
+      ),
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            from: path.join(__dirname, 'src/server/app.yaml'),
+            transform(content) {
+              return injectSecrets(content.toString());
+            },
           },
-        })),
-      ],
-    }),
-    new CopyWebpackPlugin({
-      patterns: [{ from: path.join(__dirname, 'src/fido/background.html') }],
-    }),
-  ],
-});
-
-const DevServerConfig = merge(BaseConfig, {
-  devtool: 'source-map',
-
-  entry: {
-    'dev-server': path.join(__dirname, 'src/dev-server/main.js'),
-  },
-
-  output: {
-    path: path.join(__dirname, 'build/dev-server'),
-  },
-
-  plugins: [
-    new HtmlWebpackPlugin({
-      inject: false,
-      template: require('html-webpack-template'),
-      title: 'Fido Dev Server',
-      mobile: true,
-      hash: true,
-      lang: 'en-US',
-      appMountId: 'app',
-      chunks: ['dev-server'],
-      inject: true,
-    }),
-  ],
-});
-
-const ServerConfig = merge(BaseConfig, {
-  entry: {
-    server: path.join(__dirname, 'src/server/server.js'),
-  },
-
-  output: {
-    path: path.join(__dirname, 'build/server'),
-  },
-
-  target: 'node',
-  externals: [
-    nodeExternals({
-      modulesDir: path.join(__dirname, 'node_modules'),
-    }),
-  ],
-
-  plugins: [
-    new GeneratePackageJsonPlugin(
-      {
-        name: 'fido-server',
-        scripts: {
-          start: 'node server.bundle.js',
-        },
-        engines: {
-          node: '10.x',
-        },
-      },
-      path.join(__dirname, 'package.json')
-    ),
-    new CopyWebpackPlugin({
-      patterns: [
-        {
-          from: path.join(__dirname, 'src/server/app.yaml'),
-          transform(content) {
-            return injectSecrets(content.toString());
-          },
-        },
-      ],
-    }),
-  ],
-});
+        ],
+      }),
+    ],
+  });
 
 module.exports = {
   FidoConfig,
