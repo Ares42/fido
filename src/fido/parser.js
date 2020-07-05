@@ -101,17 +101,46 @@ function createAnnotatedText(element) {
 }
 
 function* labelUrls(annotatedText) {
+  // Strippable prefix + postfix characters.
+  const prefixChars = ['►', '-', '>'];
+  const postfixChars = [':', '-', '>'];
+
+  const stripLabel = (text) => {
+    for (const prefixChar of prefixChars) {
+      if (text.startsWith(prefixChar)) {
+        text = text.substring(prefixChar.length);
+        break;
+      }
+    }
+
+    for (const postfixChar of postfixChars) {
+      if (text.endsWith(postfixChar)) {
+        text = text.substring(0, text.length - postfixChar.length);
+        break;
+      }
+    }
+
+    return text.trim();
+  };
+
   let label = null;
   for (const line of annotatedText) {
     if (line.length == 1 && 'url' in line[0]) {
       yield { label, url: line[0].url };
       continue;
     }
+    if (line.length == 2 && 'text' in line[0] && 'url' in line[1]) {
+      if (prefixChars.indexOf(line[0].text) != -1) {
+        yield { label, url: line[1].url };
+        continue;
+      }
+    }
 
-    label = line.length == 1 && 'text' in line[0] ? line[0].text : null;
+    label =
+      line.length == 1 && 'text' in line[0] ? stripLabel(line[0].text) : null;
 
     if (line.length == 2 && 'text' in line[0] && 'url' in line[1]) {
-      yield { label: line[0].text, url: line[1].url };
+      yield { label: stripLabel(line[0].text), url: line[1].url };
       continue;
     }
 
@@ -125,7 +154,9 @@ function* labelUrls(annotatedText) {
 function* createWidgets(urls) {
   const unknownUrls = [];
   for (const { label, url } of urls) {
-    if (url.match(/patreon\.com/)) {
+    const parsedUrl = parseUrl(url, true);
+
+    if (parsedUrl.origin.endsWith('patreon.com')) {
       yield { type: 'patreon', url };
       continue;
     }
