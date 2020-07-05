@@ -1,6 +1,7 @@
 const { spawn } = require('child_process');
 const path = require('path');
 
+const Args = require('./shared/args.js');
 const buildServer = require('./build-server.js');
 
 module.exports = {
@@ -11,10 +12,12 @@ module.exports = {
     },
   },
 
-  async run(_, { verbose }) {
+  async run(_, args) {
+    args = Args.parse(this.arguments, args);
+
     let exitStatus = await buildServer.run([], {
       env: 'production',
-      verbose,
+      verbose: args.verbose,
     });
     if (exitStatus != 0) {
       return exitStatus;

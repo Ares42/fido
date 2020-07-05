@@ -2,6 +2,7 @@ const webpack = require('webpack');
 const Server = require('webpack-dev-server');
 const createLogger = require('webpack-dev-server/lib/utils/createLogger');
 
+const Args = require('./shared/args.js');
 const webpackHelpers = require('./shared/webpack.js');
 
 async function runDevServer(compiler, args) {
@@ -80,6 +81,8 @@ module.exports = {
   },
 
   async run(_, args) {
+    args = Args.parse(this.arguments, args);
+
     const configs = require('../../webpack.config');
     const config = args['dev-server']
       ? configs.DevServerConfig

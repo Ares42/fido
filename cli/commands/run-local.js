@@ -1,5 +1,6 @@
 const { spawn } = require('child_process');
 
+const Args = require('./shared/args.js');
 const buildFido = require('./build.js');
 const buildServer = require('./build-server.js');
 
@@ -69,18 +70,7 @@ module.exports = {
   },
 
   async run(_, args) {
-    process.env.NODE_ENV = args.env;
-    process.fido = {
-      flags: {
-        fido: {
-          server: `http://localhost:${args['server-port']}`,
-        },
-        server: {
-          redisPort: args['redis-port'],
-          disableApiCache: !args['api-cache'],
-        },
-      },
-    };
+    args = Args.parse(this.arguments, args);
 
     await startRedis({
       port: args['redis-port'],

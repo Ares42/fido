@@ -7,7 +7,7 @@ function parseArgument(args, name, schema) {
     process.exit(1);
   }
 
-  if (!(name in args)) {
+  if (!(name in args) || args[name] === undefined) {
     if (schema.default === undefined) {
       console.error(chalk.red(`--${name} is required`));
       process.exit(1);

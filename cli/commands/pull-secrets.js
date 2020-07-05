@@ -2,6 +2,8 @@ const chalk = require('chalk');
 const { spawnSync } = require('child_process');
 const path = require('path');
 
+const Args = require('./shared/args.js');
+
 module.exports = {
   arguments: {
     verbose: {
@@ -11,6 +13,8 @@ module.exports = {
   },
 
   async run(_, { verbose }) {
+    args = Args.parse(this.arguments, args);
+
     const command = [
       'gsutil',
       'cp',

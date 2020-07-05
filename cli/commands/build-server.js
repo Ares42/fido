@@ -2,6 +2,7 @@ const { spawn } = require('child_process');
 const path = require('path');
 const webpack = require('webpack');
 
+const Args = require('./shared/args.js');
 const webpackHelpers = require('./shared/webpack.js');
 
 function spawnServer(compiler) {
@@ -71,6 +72,8 @@ module.exports = {
   },
 
   async run(_, args) {
+    args = Args.parse(this.arguments, args);
+
     const { ServerConfig } = require('../../webpack.config');
     const buildFlags = {
       port: args.port,

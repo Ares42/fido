@@ -2,7 +2,7 @@
 
 const minimist = require('minimist');
 
-const Args = require('./args.js');
+const Args = require('./commands/shared/args.js');
 
 const COMMANDS = {
   'run-local': () => require('./commands/run-local.js'),
@@ -39,10 +39,7 @@ function main(positionalArgs, keywordArgs) {
   }
 
   command
-    .run(
-      positionalArgs.slice(1),
-      Args.parse(command.arguments || {}, keywordArgs)
-    )
+    .run(positionalArgs.slice(1), keywordArgs)
     .then((exitStatus) => {
       process.exit(exitStatus);
     })
