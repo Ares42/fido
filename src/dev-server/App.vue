@@ -89,6 +89,7 @@ export default {
   flex-grow: 1;
   font-size: 16px;
   line-height: normal;
+  overflow: hidden;
 
   & > div {
     height: 100%;
