@@ -12,7 +12,7 @@ module.exports = {
     },
   },
 
-  async run(_, { verbose }) {
+  async run(_, args) {
     args = Args.parse(this.arguments, args);
 
     const command = [
@@ -22,7 +22,7 @@ module.exports = {
       path.join(__dirname, '../../secrets.json'),
     ];
 
-    if (verbose) {
+    if (args.verbose) {
       console.log(chalk.gray(`👟 ${command.join(' ')}`));
     }
 

@@ -12,7 +12,7 @@ function gitUpdateIndex() {
   });
 
   if (status == null) {
-    console.error('❌  Process cancelled by signal');
+    console.error('❌ Process cancelled by signal');
     return 1;
   } else if (status != 0) {
     console.error('❌ Failed to `git update-index`');
@@ -26,13 +26,11 @@ function gitGetChangedFiles() {
   const { status, stdout } = spawnSync(
     'git',
     ['diff-index', '--name-only', 'origin/master'],
-    {
-      stdio: [process.stdin, null, process.stderr],
-    }
+    { stdio: [process.stdin, null, process.stderr] }
   );
 
   if (status == null) {
-    console.error('❌  Process cancelled by signal');
+    console.error('❌ Process cancelled by signal');
     return null;
   } else if (status != 0) {
     console.error('❌ Failed to locate changed files in git');
@@ -44,13 +42,17 @@ function gitGetChangedFiles() {
 
 async function confirmCleanBuild() {
   const exitStatus = gitUpdateIndex();
-  if (exitStatus != 0) return exitStatus;
+  if (exitStatus != 0) {
+    return exitStatus;
+  }
 
   const changedFiles = gitGetChangedFiles();
-  if (changedFiles == null) return 1;
+  if (changedFiles == null) {
+    return 1;
+  }
 
   if (changedFiles.length > 0) {
-    console.warn('⚠️  Build contains local changes!');
+    console.warn('⚠️  Source differs from origin/master!');
     process.stdout.write(chalk.gray(changedFiles));
     return new Confirm({ name: 'Deploy with local changes?', default: false })
       .run()
@@ -60,6 +62,84 @@ async function confirmCleanBuild() {
           return 1;
         }
 
+        console.log();
+        return 0;
+      });
+  }
+
+  return 0;
+}
+
+function getRemoteSecrets() {
+  const { status, stdout } = spawnSync(
+    'gsutil',
+    ['cat', 'gs://fido-secrets/secrets.json'],
+    { stdio: [process.stdin, null, process.stderr] }
+  );
+
+  if (status == null) {
+    console.error('❌ Process cancelled by signal');
+    return null;
+  } else if (status != 0) {
+    console.error('❌ Failed to download secrets from GCP bucket');
+    return null;
+  }
+
+  return JSON.parse(stdout.toString());
+}
+
+function getLocalSecrets() {
+  try {
+    return require('../../secrets.json');
+  } catch (error) {
+    if (error.code == 'MODULE_NOT_FOUND') {
+      console.error('❌ You need to run `cli/fido.js pull-secrets`');
+    } else {
+      console.error(error);
+    }
+    return null;
+  }
+}
+
+async function confirmCleanSecrets() {
+  const expected = getRemoteSecrets();
+  if (!expected) {
+    return 1;
+  }
+
+  const observed = getLocalSecrets();
+  if (!observed) {
+    return 1;
+  }
+
+  const differences = [];
+  for (const key of Object.keys(expected)) {
+    if (!(key in observed)) {
+      differences.push(`Local secrets missing "${key}"`);
+    } else if (observed[key] !== expected[key]) {
+      differences.push(`Local and remote secrets differ for "${key}"`);
+      differences.push(`  Observed: ${observed[key]}`);
+      differences.push(`  Expected: ${expected[key]}`);
+    }
+  }
+  for (const key of Object.keys(observed)) {
+    if (!(key in expected)) {
+      differences.push(`Local secrets contains untracked key "${key}"`);
+    }
+  }
+
+  if (differences.length) {
+    console.warn('⚠️  Local and remote secrets differ!');
+    console.log(chalk.gray(differences.join('\n')));
+    return new Confirm({ name: 'Deploy with local changes?', default: false })
+      .run()
+      .then((answer) => {
+        if (!answer) {
+          console.log('🚫 Deploy cancelled');
+          return 1;
+        }
+
+        console.log();
         return 0;
       });
   }
@@ -101,6 +181,11 @@ module.exports = {
     args = Args.parse(this.arguments, args);
 
     let exitStatus = await confirmCleanBuild();
+    if (exitStatus != 0) {
+      return exitStatus;
+    }
+
+    exitStatus = await confirmCleanSecrets();
     if (exitStatus != 0) {
       return exitStatus;
     }
