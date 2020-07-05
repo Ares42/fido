@@ -11,6 +11,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { VueLoaderPlugin } = require('vue-loader');
 const WriteFilePlugin = require('write-file-webpack-plugin');
 const nodeExternals = require('webpack-node-externals');
+const ZipPlugin = require('zip-webpack-plugin');
 
 const secrets = (() => {
   try {
@@ -181,6 +182,10 @@ const FidoConfig = (env, flags) =>
       }),
       new CopyWebpackPlugin({
         patterns: [{ from: path.join(__dirname, 'src/fido/background.html') }],
+      }),
+      new ZipPlugin({
+        filename: 'fido.zip',
+        path: '../',
       }),
     ],
   });
