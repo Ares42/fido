@@ -159,6 +159,9 @@ function* createWidgets(urls) {
     if (parsedUrl.origin.endsWith('patreon.com')) {
       yield { type: 'patreon', url };
       continue;
+    } else if (parsedUrl.origin.endsWith('twitch.tv')) {
+      yield { type: 'twitch', url };
+      continue;
     }
 
     unknownUrls.push({ label, url });

@@ -3,7 +3,7 @@ import { cacheGuard } from '@/src/server/apis/shared/caching';
 async function getChannelSummary(environment, username) {
   const user = await environment.twitch.helix.users.getUserByName(username);
   if (!user) {
-    return { user };
+    return { user, stream: null };
   }
 
   const stream = await user.getStream();
