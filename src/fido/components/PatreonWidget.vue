@@ -41,11 +41,17 @@ export default {
         fetch(`${process.fido.flags.server}/api/v1/patreonInfo?url=${this.url}`)
           .then((response) => response.json())
           .then(({ goal }) => {
-            this.text_ = goal.description;
-            this.progress_ = Math.round(100 * goal.progress);
+            if (!goal) {
+              this.text_ = null;
+              this.progress_ = null;
+            } else {
+              this.text_ = goal.description;
+              this.progress_ = Math.round(100 * goal.progress);
+            }
           })
           .catch((error) => {
-            console.error(error);
+            this.text_ = null;
+            this.progress_ = null;
           });
       },
     },

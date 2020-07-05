@@ -1,7 +1,7 @@
 <template>
   <div :class="$style.Host">
-    {{ JSON.stringify(user_, null, 2) }}
-    {{ JSON.stringify(stream_, null, 2) }}
+    <div>{{ JSON.stringify(user_, null, 2) }}</div>
+    <div>{{ JSON.stringify(stream_, null, 2) }}</div>
   </div>
 </template>
 
@@ -49,7 +49,10 @@ export default {
   @include fonts-body;
 
   padding: 15px;
-  white-space: pre;
   overflow: scroll;
+
+  & > div {
+    white-space: pre;
+  }
 }
 </style>
