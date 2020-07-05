@@ -202,6 +202,10 @@ const DevServerConfig = (env, flags) =>
       path: path.join(__dirname, 'build/dev-server'),
     },
 
+    devServer: {
+      publicPath: '/',
+    },
+
     plugins: [
       new HtmlWebpackPlugin({
         inject: false,

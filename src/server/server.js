@@ -13,7 +13,7 @@ const routes = {
 
 async function main() {
   // process.env.PORT is supplied by the GAE runtime.
-  const port = process.env.PORT || process.fido.flags.port || 8080;
+  const port = process.env.PORT || process.fido.flags.port || 3000;
 
   const environment = await createEnvironment();
 

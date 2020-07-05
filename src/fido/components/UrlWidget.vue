@@ -109,6 +109,10 @@ export default {
     background: #F9F9F9;
   }
 
+  &:active {
+    background: #F6F6F6;
+  }
+
   & ~ .Link {
     border-top: 1px solid #E0E0E0;
   }

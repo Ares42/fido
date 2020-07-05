@@ -6,10 +6,7 @@ const Args = require('./shared/args.js');
 const webpackHelpers = require('./shared/webpack.js');
 
 async function runDevServer(compiler, args) {
-  const options = { hot: true, port: args['dev-server-port'] };
-  if (!args.verbose) {
-    options.stats = 'minimal';
-  }
+  const options = { hot: true, port: args['dev-server-port'], stats: 'none' };
 
   const server = new Server(
     compiler,
