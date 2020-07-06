@@ -103,7 +103,16 @@ function createAnnotatedText(element) {
 function* labelUrls(annotatedText) {
   // Strippable prefix + postfix characters.
   const prefixChars = ['\u25b6', '\u25ba', '\u00bb', '\u2192', '-', '>'];
-  const postfixChars = ['\u25b6', '\u25ba', '\u00bb', ':', '-', '>', '|'];
+  const postfixChars = [
+    '\u25b6',
+    '\u25ba',
+    '\u00bb',
+    '\u2192',
+    ':',
+    '-',
+    '>',
+    '|',
+  ];
 
   const stripLabel = (text) => {
     for (const prefixChar of prefixChars) {
