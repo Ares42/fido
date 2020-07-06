@@ -54,8 +54,11 @@
     "get-website-favicon": "0.0.7",
     "helmet": "^3.23.3",
     "node-fetch": "^2.6.0",
+<<<<<<< HEAD
     "prettier": "^2.0.5",
     "promise-fs": "^2.1.1",
+=======
+>>>>>>> fixed prettier installation locations:
     "prompt-confirm": "^2.0.4",
     "redis": "^3.0.2",
     "redis-commands": "^1.5.0",
