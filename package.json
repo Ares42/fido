@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "test": "echo 'No tests defined'; exit 1"
+    "pre-commit-lint": "cli/fido.js lint --cached"
+  },
+  "pre-commit": {
+    "run": "pre-commit-lint"
   },
   "author": "",
   "license": "",
@@ -25,6 +28,7 @@
     "minimist": "^1.2.5",
     "node-sass": "^4.14.1",
     "postcss-loader": "^3.0.0",
+    "pre-commit": "^1.2.2",
     "sass-loader": "^8.0.2",
     "sharp": "^0.25.4",
     "strip-json-comments": "^3.1.0",
@@ -46,9 +50,12 @@
     "deep-freeze": "0.0.1",
     "exponential-backoff": "^3.0.1",
     "express": "^4.17.1",
+    "fast-glob": "^3.2.4",
     "get-website-favicon": "0.0.7",
     "helmet": "^3.23.3",
     "node-fetch": "^2.6.0",
+    "prettier": "^2.0.5",
+    "promise-fs": "^2.1.1",
     "prompt-confirm": "^2.0.4",
     "redis": "^3.0.2",
     "redis-commands": "^1.5.0",
@@ -56,6 +63,7 @@
     "string-strip-html": "^4.5.0",
     "url-parse": "^1.4.7",
     "vue": "^2.6.11",
-    "vue-codemirror": "^4.0.6"
+    "vue-codemirror": "^4.0.6",
+    "wildcard-match": "^3.0.0"
   }
 }

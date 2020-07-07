@@ -6,6 +6,7 @@ const Args = require('./commands/shared/args.js');
 
 const COMMANDS = {
   'run-local': () => require('./commands/run-local.js'),
+  lint: () => require('./commands/lint.js'),
   build: () => require('./commands/build.js'),
   'build-server': () => require('./commands/build-server.js'),
   'deploy-server': () => require('./commands/deploy-server.js'),
