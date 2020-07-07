@@ -1,18 +1,31 @@
 const Duration = require('format-duration-time').default;
 
-// Logs errors, warnings, and a result summary given compilation statistics.
-function logBuildStats(stats, { verbose, namespace }) {
-  if (stats.hasErrors() || stats.hasWarnings() || verbose) {
-    console.log(stats.toString({ colors: true }));
-  }
+const { logSuccess, logFailure } = require('./logging.js');
 
+function getBuildSummary(stats, { namespace }) {
   const elapsedMilliseconds = stats.endTime - stats.startTime;
   const elapsedString = Duration(elapsedMilliseconds).format('m[m] s[s]');
   const namespaceString = namespace ? `[${namespace}] ` : '';
   if (stats.hasErrors()) {
-    console.log(`❌ ${namespaceString}Build failed [${elapsedString}]`);
+    return `${namespaceString}Build failed [${elapsedString}]`;
   } else {
-    console.log(`✅ ${namespaceString}Built successfully [${elapsedString}]`);
+    return `${namespaceString}Built successfully [${elapsedString}]`;
+  }
+}
+
+function logBuildSummary(stats, { namespace }) {
+  const summary = getBuildSummary(stats, { namespace });
+  if (buildOk(stats)) {
+    logSuccess(summary);
+  } else {
+    logFailure(summary);
+  }
+}
+
+// Logs errors, warnings, and a result summary given compilation statistics.
+function logBuildStats(stats, { verbose }) {
+  if (stats.hasErrors() || stats.hasWarnings() || verbose) {
+    console.log(stats.toString({ colors: true }));
   }
 }
 
@@ -36,15 +49,6 @@ function logChangedFiles(compiler, { namespace }) {
   }
 }
 
-// Logs any errors that occured in webpack. These are NOT build errors and are
-// often fatal. See the related helpers `webpackOk` and `buildOk`.
-function logWebpackError(error) {
-  console.error(error.stack || error);
-  if (error.details) {
-    console.error(error.details);
-  }
-}
-
 function webpackOk(error) {
   return !error;
 }
@@ -60,13 +64,17 @@ async function run(compiler, { verbose, namespace }) {
   return new Promise((resolve, reject) => {
     compiler.run((error, stats) => {
       if (!webpackOk(error)) {
-        logWebpackError(error);
-        resolve(1);
-        return;
+        throw error;
       }
 
       logBuildStats(stats, { verbose, namespace });
-      resolve(buildOk(stats) ? 0 : 1);
+
+      const summary = getBuildSummary(stats, { namespace });
+      if (buildOk(stats)) {
+        resolve(summary);
+      } else {
+        reject(summary);
+      }
     });
   });
 }
@@ -81,12 +89,12 @@ async function watch(compiler, { verbose, namespace }) {
     });
     compiler.hooks.done.tap('fido', (stats) => {
       logBuildStats(stats, { verbose, namespace });
+      logBuildSummary(stats, { namespace });
     });
 
     compiler.watch({ ignored: [/node_modules/] }, (error, stats) => {
       if (!webpackOk(error)) {
-        logWebpackError(error);
-        resolve(1);
+        throw error;
       }
     });
   });
@@ -95,7 +103,8 @@ async function watch(compiler, { verbose, namespace }) {
 module.exports = {
   logBuildStats,
   logChangedFiles,
-  logWebpackError,
+  getBuildSummary,
+  logBuildSummary,
   webpackOk,
   buildOk,
   run,

@@ -3,22 +3,13 @@ const path = require('path');
 const webpack = require('webpack');
 
 const Args = require('./shared/args.js');
+const { logSuccess, logFailure } = require('./shared/logging.js');
 const webpackHelpers = require('./shared/webpack.js');
 
 function spawnServer(compiler) {
-  const subprocess = spawn(
-    'node',
-    [path.join(compiler.outputPath, 'server.bundle.js')],
-    { stdio: [process.stdin, process.stdout, process.stderr] }
-  );
-
-  waitForExit(subprocess).then(({ cause }) => {
-    if (cause == 'external') {
-      console.log('❌ [server] Died');
-    }
+  return spawn('node', [path.join(compiler.outputPath, 'server.bundle.js')], {
+    stdio: [process.stdin, process.stdout, process.stderr],
   });
-
-  return subprocess;
 }
 
 async function waitForExit(subprocess) {
@@ -98,6 +89,7 @@ module.exports = {
           server = spawnServer(compiler);
           waitForExit(server).then(({ cause }) => {
             if (cause == 'external') {
+              logFailure('[server] Died');
               server = null;
             }
           });
@@ -109,18 +101,18 @@ module.exports = {
         namespace: 'server',
       });
     } else {
-      const exitStatus = await webpackHelpers.run(compiler, {
+      const buildSummary = await webpackHelpers.run(compiler, {
         verbose: args.verbose,
         namespace: 'server',
       });
-      if (exitStatus != 0) {
-        return exitStatus;
-      }
 
       if (args.run) {
-        await waitForExit(spawnServer(compiler));
+        logSuccess(buildSummary);
+        await waitForExit(spawnServer(compiler)).then(({ cause }) => {
+          throw '[server] Died';
+        });
       } else {
-        return 0;
+        return buildSummary;
       }
     }
   },

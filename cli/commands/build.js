@@ -22,13 +22,13 @@ async function runDevServer(compiler, args) {
       verbose: args.verbose,
       namespace: 'fido',
     });
+    webpackHelpers.logBuildSummary(stats, { namespace: 'fido' });
   });
 
   return new Promise((resolve, reject) => {
     server.listen(args['dev-server-port'], 'localhost', (error) => {
       if (!webpackHelpers.webpackOk(error)) {
-        webpackHelpers.logWebpackError(error);
-        resolve(1);
+        throw error;
       } else {
         console.log(
           `👂 [fido] Serving on localhost:${args['dev-server-port']}`
@@ -97,11 +97,9 @@ module.exports = {
 
     if (args.run) {
       if (!args['dev-server']) {
-        console.log('❌ --run cannot be used without --dev-server');
-        return 1;
-      } else {
-        return runDevServer(compiler, args);
+        throw '--run cannot be used without --dev-server';
       }
+      return runDevServer(compiler, args);
     }
 
     return args.watch

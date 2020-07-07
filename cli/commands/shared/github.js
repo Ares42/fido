@@ -7,13 +7,13 @@ async function getCachedFileObjectHash(file) {
       {},
       (error, stdout, stderr) => {
         if (error) {
-          reject(error);
-          return;
+          console.error(error);
+          throw `Error getting hash for ${file}`;
         }
 
         if (stderr) {
-          reject(stderr);
-          return;
+          console.error(stderr);
+          throw `Error getting hash for ${file}`;
         }
 
         if (!stdout) {
@@ -35,13 +35,13 @@ async function readCachedObject(hash) {
       {},
       (error, stdout, stderr) => {
         if (error) {
-          reject(error);
-          return;
+          console.error(error);
+          throw `Error reading cached object ${hash}`;
         }
 
         if (stderr) {
-          reject(stderr);
-          return;
+          console.error(stderr);
+          throw `Error reading cached object ${hash}`;
         }
 
         resolve(stdout);
@@ -64,13 +64,13 @@ async function listCachedFiles() {
       {},
       (error, stdout, stderr) => {
         if (error) {
-          reject(error);
-          return;
+          console.error(error);
+          throw 'Error listing cached files';
         }
 
         if (stderr) {
-          reject(stderr);
-          return;
+          console.error(stderr);
+          throw 'Error listing cached files';
         }
 
         if (!stdout) {

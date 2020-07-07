@@ -32,14 +32,11 @@ module.exports = {
       });
 
       if (status == null) {
-        console.error('❌ Pull cancelled by signal');
-        resolve(1);
+        throw 'Pull cancelled by signal. Is gcloud installed?';
       } else if (status != 0) {
-        console.error('❌ Failed to pull secrets');
-        resolve(status);
+        throw 'Failed to pull secrets';
       } else {
-        console.log('✅ Secrets stored locally');
-        resolve(0);
+        resolve('Secrets stored locally');
       }
     });
 

@@ -4,6 +4,7 @@ const path = require('path');
 const Confirm = require('prompt-confirm');
 
 const Args = require('./shared/args.js');
+const { logSuccess, logWarning } = require('./shared/logging.js');
 const buildServer = require('./build-server.js');
 
 function gitFetchOriginMaster({ verbose }) {
@@ -20,15 +21,9 @@ function gitFetchOriginMaster({ verbose }) {
     ],
   });
 
-  if (status == null) {
-    console.error('❌  Process cancelled by signal');
-    return 1;
-  } else if (status != 0) {
-    console.error('❌ Failed to fetch origin/master');
-    return status;
+  if (status == null || status != 0) {
+    throw 'Failed to fetch origin/master';
   }
-
-  return 0;
 }
 
 function gitUpdateIndex() {
@@ -36,15 +31,9 @@ function gitUpdateIndex() {
     stdio: [process.stdin, process.stdout, process.stderr],
   });
 
-  if (status == null) {
-    console.error('❌ Process cancelled by signal');
-    return 1;
-  } else if (status != 0) {
-    console.error('❌ Failed to `git update-index`');
-    return status;
+  if (status == null || status != 0) {
+    throw 'Failed to `git update-index`';
   }
-
-  return 0;
 }
 
 function gitGetChangedFiles() {
@@ -54,49 +43,29 @@ function gitGetChangedFiles() {
     { stdio: [process.stdin, null, process.stderr] }
   );
 
-  if (status == null) {
-    console.error('❌ Process cancelled by signal');
-    return null;
-  } else if (status != 0) {
-    console.error('❌ Failed to locate changed files in git');
-    return null;
+  if (status == null || status != 0) {
+    throw 'Failed to locate changed files in git';
   }
 
   return stdout;
 }
 
 async function confirmCleanBuild({ verbose }) {
-  let exitStatus = gitFetchOriginMaster({ verbose });
-  if (exitStatus != 0) {
-    return exitStatus;
-  }
-
-  exitStatus = gitUpdateIndex();
-  if (exitStatus != 0) {
-    return exitStatus;
-  }
+  gitFetchOriginMaster({ verbose });
+  gitUpdateIndex();
 
   const changedFiles = gitGetChangedFiles();
-  if (changedFiles == null) {
-    return 1;
-  }
-
   if (changedFiles.length > 0) {
-    console.warn('⚠️  Source differs from origin/master!');
+    logWarning('Source differs from origin/master!');
     process.stdout.write(chalk.gray(changedFiles));
     return new Confirm({ name: 'Deploy with local changes?', default: false })
       .run()
       .then((answer) => {
         if (!answer) {
-          console.log('🚫 Deploy cancelled');
-          return 1;
+          throw 'Deploy cancelled';
         }
-
-        return 0;
       });
   }
-
-  return 0;
 }
 
 function getRemoteSecrets() {
@@ -106,12 +75,8 @@ function getRemoteSecrets() {
     { stdio: [process.stdin, null, process.stderr] }
   );
 
-  if (status == null) {
-    console.error('❌ Process cancelled by signal');
-    return null;
-  } else if (status != 0) {
-    console.error('❌ Failed to download secrets from GCP bucket');
-    return null;
+  if (status == null || status != 0) {
+    throw 'Failed to download secrets from GCP bucket';
   }
 
   return JSON.parse(stdout.toString());
@@ -122,24 +87,16 @@ function getLocalSecrets() {
     return require('../../secrets.json');
   } catch (error) {
     if (error.code == 'MODULE_NOT_FOUND') {
-      console.error('❌ You need to run `cli/fido.js pull-secrets`');
+      throw 'You need to run `cli/fido.js pull-secrets`';
     } else {
-      console.error(error);
+      throw error;
     }
-    return null;
   }
 }
 
 async function confirmCleanSecrets() {
   const expected = getRemoteSecrets();
-  if (!expected) {
-    return 1;
-  }
-
   const observed = getLocalSecrets();
-  if (!observed) {
-    return 1;
-  }
 
   const differences = [];
   for (const key of Object.keys(expected)) {
@@ -158,21 +115,16 @@ async function confirmCleanSecrets() {
   }
 
   if (differences.length) {
-    console.warn('⚠️  Local and remote secrets differ!');
+    logWarning('Local and remote secrets differ!');
     console.log(chalk.gray(differences.join('\n')));
     return new Confirm({ name: 'Deploy with local changes?', default: false })
       .run()
       .then((answer) => {
         if (!answer) {
-          console.log('🚫 Deploy cancelled');
-          return 1;
+          throw 'Deploy cancelled';
         }
-
-        return 0;
       });
   }
-
-  return 0;
 }
 
 function gcloudDeploy() {
@@ -189,7 +141,9 @@ function gcloudDeploy() {
     { stdio: [process.stdin, process.stdout, process.stderr] }
   );
 
-  return status == null ? 1 : status;
+  if (status == null || status != 0) {
+    throw 'Deploy failed';
+  }
 }
 
 module.exports = {
@@ -208,35 +162,21 @@ module.exports = {
   async run(_, args) {
     args = Args.parse(this.arguments, args);
 
-    let exitStatus = await confirmCleanBuild({ verbose: args.verbose });
-    if (exitStatus != 0) {
-      return exitStatus;
-    }
+    await confirmCleanBuild({ verbose: args.verbose });
+    await confirmCleanSecrets();
 
-    exitStatus = await confirmCleanSecrets();
-    if (exitStatus != 0) {
-      return exitStatus;
-    }
-
-    exitStatus = await buildServer.run([], {
-      env: 'production',
-      verbose: args.verbose,
-    });
-    if (exitStatus != 0) {
-      return exitStatus;
-    }
+    logSuccess(
+      await buildServer.run([], {
+        env: 'production',
+        verbose: args.verbose,
+      })
+    );
 
     if (args.dry) {
-      console.log('🚫 As per --dry, skipping actual deploy');
-      return 0;
+      throw 'As per --dry, skipping actual deploy';
     }
 
-    exitStatus = gcloudDeploy();
-    if (exitStatus != 0) {
-      console.log(`❌ Deploy failed`);
-    } else {
-      console.log(`✅ Deploy finished`);
-    }
-    return exitStatus;
+    gcloudDeploy();
+    return 'Deploy finished';
   },
 };

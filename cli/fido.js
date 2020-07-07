@@ -3,6 +3,11 @@
 const minimist = require('minimist');
 
 const Args = require('./commands/shared/args.js');
+const {
+  logSuccess,
+  logWarning,
+  logFailure,
+} = require('./commands/shared/logging.js');
 
 const COMMANDS = {
   'run-local': () => require('./commands/run-local.js'),
@@ -41,11 +46,15 @@ function main(positionalArgs, keywordArgs) {
 
   command
     .run(positionalArgs.slice(1), keywordArgs)
-    .then((exitStatus) => {
-      process.exit(exitStatus);
+    .then((message) => {
+      if (message) {
+        logSuccess(message);
+      } else {
+        logWarning('Command exited successfully without any output');
+      }
     })
     .catch((error) => {
-      console.log(error);
+      logFailure(error);
       process.exit(1);
     });
 }

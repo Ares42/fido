@@ -103,8 +103,7 @@ module.exports = {
       // If we were to allow this, files would be formatted based on their
       // cached contents and then overwrite uncached changes... Meaning devs
       // would lose their work in an unrecoverable way!
-      console.error('❌ --fix and --cached cannot be used together');
-      return 1;
+      throw '--fix and --cached cannot be used together';
     }
 
     const linters = [
@@ -162,22 +161,19 @@ module.exports = {
       }
     }
 
-    if (args.fix) {
-      console.log('✅ Done');
-      return 0;
-    }
-
     if (!allFilesPassed) {
-      console.log();
-      console.log(
-        chalk.gray('Run `cli/fido.js lint --fix` to auto-format files')
-      );
-      console.log();
-      console.error('❌ Failed');
-      return 1;
+      if (args.fix) {
+        return 'Files fixed';
+      } else {
+        console.log();
+        console.log(
+          chalk.gray('Run `cli/fido.js lint --fix` to auto-format files')
+        );
+        console.log();
+        throw 'Lint failed';
+      }
     }
 
-    console.log('✅ Passed');
-    return 0;
+    return 'Lint passed';
   },
 };

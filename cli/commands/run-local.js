@@ -1,6 +1,7 @@
 const { spawn } = require('child_process');
 
 const Args = require('./shared/args.js');
+const { logSuccess } = require('./shared/logging.js');
 const buildFido = require('./build.js');
 const buildServer = require('./build-server.js');
 
@@ -10,17 +11,19 @@ function startRedis({ port, verbose }) {
 
     redis.once('error', (error) => {
       console.log(error.stack);
-      console.error('❌ [redis] Refused to start! Is redis-server installed?');
-      process.exit(1);
+      reject('[redis] Refused to start! Is redis-server installed?');
     });
 
     redis.once('exit', (exitStatus) => {
       if (exitStatus != 0) {
-        console.error('❌ [redis] Crashed!');
-        process.exit(1);
+        reject('[redis] Crashed!');
       } else {
         console.error('🤔 [redis] Exited... successfully?');
       }
+    });
+
+    redis.stderr.on('data', (data) => {
+      console.error(`[redis] ${data.toString()}`);
     });
 
     redis.stdout.on('data', (data) => {
@@ -28,7 +31,7 @@ function startRedis({ port, verbose }) {
         console.log(`[redis] ${data.toString()}`);
       }
       if (data.toString().indexOf('Ready to accept connections') != -1) {
-        console.log('✅ [redis] Ready');
+        logSuccess('[redis] Ready');
         resolve();
       }
     });
